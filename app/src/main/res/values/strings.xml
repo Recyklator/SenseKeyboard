@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SenseKeyboard</string>
+    <string name="sense_keyboard">Sense Keyboard</string>
+    <string name="default_layout">Default layout</string>
+</resources>
