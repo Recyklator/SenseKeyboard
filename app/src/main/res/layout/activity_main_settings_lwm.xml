@@ -8,13 +8,13 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".SenseKeyboardSettings1">
+    tools:context=".SenseKeyboardSettingsLwm">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="LWM - Loud while moving"
+        android:text="@string/SettingsTitleLwm"
         android:id="@+id/lwmTitle"
         android:layout_gravity="top|center_horizontal" />
 
@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Zde můžete zapnout funkci LWM - Loud while moving. Pokud bude detekován rychlý pohyb zařízení typický pro jízdu autem nebo vozem MHD, aplikace automaticky zvýší hlasitost zvukové odezvy klávesnice."
+        android:text="@string/SettingsBaseLwm"
         android:id="@+id/lwmTextBase"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp" />
@@ -45,7 +45,13 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="Loud while moving"
-                android:id="@+id/lwm_settings_switch_button" />
+                android:id="@+id/lwm_settings_switch" />
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Další nastavení"
+                android:id="@+id/lwm_settings_next_button" />
 
             <Button
                 android:layout_width="fill_parent"

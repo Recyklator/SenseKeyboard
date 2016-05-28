@@ -8,22 +8,22 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".SenseKeyboardSettings1">
+    tools:context=".SenseKeyboardSettingsFinal">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/SettingsTitleFirst"
-        android:id="@+id/settingsTitle"
+        android:text="@string/settingsTitleFinal"
+        android:id="@+id/finalSettingsTitle"
         android:layout_gravity="top|center_horizontal" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/SettingsBaseFirst"
-        android:id="@+id/settingsTextBase"
+        android:text="@string/SettingsBaseFinal"
+        android:id="@+id/finalSettingsTextBase"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp" />
         <!--android:textSize="20sp" -->
@@ -44,14 +44,20 @@
             <Button
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="Nastavit klávesnici"
-                android:id="@+id/main_settings_next_button" />
+                android:text="Aktivovat klávesnici"
+                android:id="@+id/final_settings_activate_keyboard_button" />
 
             <Button
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="Ukončit nastavení"
-                android:id="@+id/main_settings_exit_button" />
+                android:text="Zvolit klávesnici"
+                android:id="@+id/final_settings_choose_keyboard_button" />
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Zpět"
+                android:id="@+id/final_settings_back_button" />
 
         </LinearLayout>
     </RelativeLayout>

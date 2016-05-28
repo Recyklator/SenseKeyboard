@@ -15,7 +15,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SenseKeyboardSettings2">
+        <activity android:name=".SenseKeyboardSettingsLwm">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".SenseKeyboardSettingsFinal">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,6 +37,12 @@
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
             </intent-filter>
+        </service>
+
+        <service android:name=".SignificantMotionSensor"
+            android:label="@string/sense_keyboard">
+
+            <meta-data android:name="android.view.im" android:resource="@xml/properties"/>
         </service>
 
     </application>
