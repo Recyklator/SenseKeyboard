@@ -1,12 +1,14 @@
 <resources>
     <string name="app_name">SenseKeyboard</string>
     <string name="sense_keyboard">Sense Keyboard</string>
-    <string name="default_layout">Default layout</string>
+    <string name="keyboard_layout">Čeština</string>
     <string name="LWMFeature">lwm_feature</string>
     <string name="SettingsBaseFinal">Klávesnice byla úspěšně nastavena. Aby bylo možné ji používat, je třeba ji v systému Android nastavit jako hlavní klávesnici. S tím Vám pomůže tlačítko Aktivovat pod tímto textem.</string>
-    <string name="settingsTitleFinal">Aktivovat systémovou klávesnici</string>
-    <string name="SettingsTitleLwm">LWM - Loud while moving</string>
-    <string name="SettingsBaseLwm">Zde můžete zapnout funkci LWM - Loud while moving. Pokud bude detekován rychlý pohyb zařízení typický pro jízdu autem nebo vozem MHD, aplikace automaticky zvýší hlasitost zvukové odezvy klávesnice.</string>
-    <string name="SettingsTitleFirst">Sense Keyboard - Settings</string>
+    <string name="SettingsTitleFinal">Aktivovat systémovou klávesnici</string>
+    <string name="SettingsTitleLwm">Funkce Louder While Moving</string>
+    <string name="SettingsBaseLwm">Zde můžete zapnout funkci Louder while moving. Pokud bude detekován rychlý pohyb zařízení typický pro jízdu autem nebo vozem MHD, aplikace automaticky zvýší hlasitost zvukové odezvy klávesnice.</string>
+    <string name="SettingsTitleFirst">Sense Keyboard - Nastavení</string>
     <string name="SettingsBaseFirst">Dobrý den, děkuji Vám za důvěru, kterou jste projevili instalací intuitivní klávesnice nazvané Sense Keyboard. Dříve, než společně Vaši novou systémovou klávesnici aktivujeme, projdeme několik volitelných nastavení. Je to z toho důvodu, aby se klávesnice chovala přesně tak, jak Vám bude nejvíce vyhovovat. Máme tu připravena dvě tlačítka. První nám umožní klávesnici nastavit, tím druhým lze aplikaci ukončit.</string>
+    <string name="KeyboardOn">Klávesnice je zobrazena</string>
+    <string name="KeyABC">a</string>
 </resources>

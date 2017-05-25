@@ -2,10 +2,19 @@
     android:keyWidth="33%p"
     android:horizontalGap="0px"
     android:verticalGap="0px"
-    android:keyHeight="25%p">
+    android:keyHeight="20%p">
+
     <Row>
-        <Key android:codes="49" android:keyLabel="1" android:keyEdgeFlags="left"/>
-        <Key android:codes="97,98,99" android:keyLabel="abc"/>
+        <EditText
+            android:id="@+id/keyboard_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences|textAutoCorrect"/>
+    </Row>
+
+    <Row>
+        <Key android:codes="44,46,63,33" android:keyLabel=",.\?!" android:keyEdgeFlags="left"/>
+        <Key android:codes="97,98,99" android:keyLabel="abc" android:contentDescription="@string/KeyABC"/>
         <Key android:codes="100,101,102" android:keyLabel="def" android:keyEdgeFlags="right"/>
     </Row>
     <Row>
@@ -19,8 +28,8 @@
        <Key android:codes="119,120,121,122" android:keyLabel="wxyz" android:keyEdgeFlags="right"/>
    </Row>
    <Row android:rowEdgeFlags="bottom">
-       <Key android:codes="44,46,63,33" android:keyLabel=",.\?!" android:keyEdgeFlags="left"/>
+       <Key android:codes="-5" android:keyLabel="DEL" android:isRepeatable="true" android:keyEdgeFlags="left"/>
        <Key android:codes="32" android:keyLabel="SPACE"/>
-       <Key android:codes="-5" android:keyLabel="DEL" android:isRepeatable="true" android:keyEdgeFlags="right"/>
+       <Key android:codes="-4" android:keyLabel="ENTER" android:keyEdgeFlags="right"/>
    </Row>
 </Keyboard>

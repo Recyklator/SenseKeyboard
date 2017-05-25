@@ -25,7 +25,9 @@
         android:text="@string/SettingsBaseLwm"
         android:id="@+id/lwmTextBase"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp" />
+        android:layout_marginBottom="10dp"
+        android:focusable="true"
+        android:nextFocusDown="@+id/lwm_settings_switch" />
         <!--android:textSize="20sp" -->
 
     <RelativeLayout
@@ -45,19 +47,24 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="Loud while moving"
-                android:id="@+id/lwm_settings_switch" />
+                android:id="@+id/lwm_settings_switch"
+                android:focusable="true"
+                android:nextFocusForward="@+id/lwm_settings_next_button" />
 
             <Button
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="Další nastavení"
-                android:id="@+id/lwm_settings_next_button" />
+                android:id="@+id/lwm_settings_next_button"
+                android:focusable="true"
+                android:nextFocusDown="@+id/lwm_settings_switch" />
 
             <Button
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="Ukončit nastavení"
-                android:id="@+id/lwm_settings_exit_button" />
+                android:id="@+id/lwm_settings_exit_button"
+                android:focusable="true" />
 
         </LinearLayout>
     </RelativeLayout>

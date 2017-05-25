@@ -1,6 +1,6 @@
 package com.example.dell.sensekeyboard;
 
-import android.annotation.TargetApi;
+
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -14,7 +14,7 @@ import java.util.TimerTask;
 /**
  * Class for Significant motion sensor manipulation - available since API 18 (4.3)
  */
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+
 public class SignificantMotionSensor implements SensorEventListener {
 
     // TODO: consider using semaphore protection !!
@@ -23,14 +23,14 @@ public class SignificantMotionSensor implements SensorEventListener {
     SenseKeyboardService mSenseKeyboardService; // TODO: find better way to actualize flag in main service task rather than taking whole class and call setter.
 
     private static final Integer SENSOR_DELAY = Integer.MAX_VALUE; // delays between events from sensor informing us about changes
-    private static final Integer MOVEMENT_TURNOFF_TIMER = 120000; // 120s - timer between last movement detection and deviceInMove flag change to false
+    private static final Integer MOVEMENT_TURNOFF_TIMER = 30000; // 30s - timer between last movement detection and deviceInMove flag change to false
     private static final Integer MOVEMENT_CALCULATION_THRESHOLD = 4; // how intensive movement is classified as silence break
     private static final Integer SILENCE_BREAKS_THRESHOLD = 4; // how many silence breaks in short time needed to classify device as 'in move'
     private static final long MIN_PERIOD_BETWEEN_SILENCE_BREAKS = 2000; // 2s - all silence breaks in less than THIS millis from last one will be ignored
     private static final long MAX_PERIOD_BETWEEN_SILENCE_BREAKS = 15000; // 15s - if no silence break in THIS millis, silenceBreaksInRowCounter will be cleared
     private final SensorManager mSensorManager;
     private Integer silenceBreaksInRowCounter = 0;
-    private Sensor mSensor;
+    private Sensor mSensor = null;
     private Timer timer; //
     private long timeOfLastSilenceBreak = 1; // time in millis of last silence break
 
@@ -46,9 +46,13 @@ public class SignificantMotionSensor implements SensorEventListener {
         setDeviceInMoveFlag(false); // lets initialize move flag to false since at beginning we have no info about device move
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
+        // if we are on device with API 18 and above, we can try to look for system implementation of SMSensor, it should be more precise
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
+        }
+
         if(mSensor == null) {
-            // significant motion sensor is not available on running device, use accelerometer instead
+            // significant motion sensor is not available on running device (either not implemented or lower API version), use accelerometer instead
             mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         }
     }
@@ -74,7 +78,6 @@ public class SignificantMotionSensor implements SensorEventListener {
             mAccelCurrent = (float) Math.sqrt(x*x + y*y + z*z);
             float delta = mAccelCurrent - mAccelLast;
             mAccel = mAccel * 0.9f + delta;
-
             if(mAccel > MOVEMENT_CALCULATION_THRESHOLD) {
                 // first of all, check when last threshold break happened (if not at least MIN_PERIOD_..., then ignore it)
                 long currentTime = System.currentTimeMillis();

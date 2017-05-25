@@ -66,4 +66,10 @@ public class SenseKeyboardSettingsLwm extends AppCompatActivity {
             });
         }
     }
+
+    /*
+    Performing stop of activity that is not resumed: {com.example.dell.sensekeyboard/com.example.dell.sensekeyboard.SenseKeyboardSettingsLwm}
+    java.lang.RuntimeException: Performing stop of activity that is not resumed: {com.example.dell.sensekeyboard/com.example.dell.sensekeyboard.SenseKeyboardSettingsLwm}
+    at android.app.ActivityThread.performStopActivityInner(ActivityThread.java:3607)
+    */
 }

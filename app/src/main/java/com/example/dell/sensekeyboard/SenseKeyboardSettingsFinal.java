@@ -46,6 +46,9 @@ public class SenseKeyboardSettingsFinal extends AppCompatActivity {
             });
         }
 
+
+        //new MzdyServiceTask().execute(vstup);
+
         Button backButton = (Button)findViewById(R.id.final_settings_back_button);
         if (backButton != null) {
 
