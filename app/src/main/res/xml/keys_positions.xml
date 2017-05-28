@@ -1,17 +1,8 @@
 <Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
-    android:keyWidth="33%p"
-    android:horizontalGap="0px"
-    android:verticalGap="0px"
+    android:keyWidth="33.33333%p"
+    android:horizontalGap="0dp"
+    android:verticalGap="0dp"
     android:keyHeight="20%p">
-
-    <Row>
-        <EditText
-            android:id="@+id/keyboard_input"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:inputType="textCapSentences|textAutoCorrect"/>
-    </Row>
-
     <Row>
         <Key android:codes="44,46,63,33" android:keyLabel=",.\?!" android:keyEdgeFlags="left"/>
         <Key android:codes="97,98,99" android:keyLabel="abc" android:contentDescription="@string/KeyABC"/>

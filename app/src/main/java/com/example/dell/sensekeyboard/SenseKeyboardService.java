@@ -183,6 +183,15 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         }
     }
 
+    @Override
+    public boolean onEvaluateFullscreenMode() {
+        return true;
+    }
+
+    @Override
+    public void onUpdateExtractingVisibility(EditorInfo ei) {
+        setExtractViewShown(true);
+    }
 
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
@@ -190,8 +199,8 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         KeyboardView view = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
 
         //Log.e("SenseKeyboard-Service","onStartInputView-Key ^^^^ "+view.findViewById(R.id.keyboard_input));
-        EditText keyboardInput = (EditText)view.findViewById(R.id.keyboard_input);
-        keyboardInput.setText("Google is your friend.", TextView.BufferType.EDITABLE);
+//        EditText keyboardInput = (EditText)view.findViewById(R.id.keyboard_input);
+//        keyboardInput.setText("Google is your friend.", TextView.BufferType.EDITABLE);
 
         InputConnection ic = getCurrentInputConnection();
 
