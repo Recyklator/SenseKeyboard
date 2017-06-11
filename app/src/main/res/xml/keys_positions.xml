@@ -2,7 +2,7 @@
     android:keyWidth="33.33333%p"
     android:horizontalGap="0dp"
     android:verticalGap="0dp"
-    android:keyHeight="20%p">
+    android:keyHeight="10%p">
     <Row>
         <Key android:codes="44,46,63,33" android:keyLabel=",.\?!" android:keyEdgeFlags="left"/>
         <Key android:codes="97,98,99" android:keyLabel="abc" android:contentDescription="@string/KeyABC"/>
