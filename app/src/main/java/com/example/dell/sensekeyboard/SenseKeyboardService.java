@@ -17,8 +17,10 @@ import android.view.View;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.view.textservice.SentenceSuggestionsInfo;
 import android.view.textservice.SpellCheckerSession;
+import android.view.textservice.SpellCheckerSubtype;
 import android.view.textservice.SuggestionsInfo;
 import android.view.textservice.TextInfo;
 import android.view.textservice.TextServicesManager;
@@ -28,6 +30,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -43,9 +46,11 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     private Boolean mLwmFeatureActive = false;
     private Boolean mDeviceInMoveFlag = false; // copy of SignificantMotionSensor member, indicating if device is in move
     private Boolean mDisplayComposingText;
+    //private Boolean mCapitalLetterFlag;
 
     private SignificantMotionSensor mSignificantMotionSensor = null;
     private Keyboard mKeyboard = null;
+    //private InputMethodManager mInputMethodManager;
 
     private AudioManager audioManager;
     private float defaultAudioVolume = (float) 0.1; // default key click audio volume
@@ -69,11 +74,15 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     public SenseKeyboardService() {
         mComposing = new StringBuilder();
         mSuggestions = new ArrayList<String>();
+        //mCapitalLetterFlag = true;
     }
 
     // http://android.okhelp.cz/java_android_code.php?o=%5Candroid-15%5CSoftKeyboard%5Csrc%5Ccom%5Cexample%5Candroid%5Csoftkeyboard%5CSoftKeyboard.java
     // http://www.blackcj.com/blog/2016/03/30/building-a-custom-android-keyboard/
     // https://blog.autsoft.hu/discovering-the-android-api-part-1/ - API differences
+    // https://code.tutsplus.com/tutorials/an-introduction-to-androids-spelling-checker-framework--cms-23754
+    // https://developer.android.com/training/keyboard-input/style.html
+    // https://nlp.stanford.edu/IR-book/html/htmledition/edit-distance-1.html
 
     @Override
     public void onCreate() { // causes application fail (even empty method), don't know why...
@@ -86,8 +95,16 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         mTypeface = Typeface.createFromAsset(getAssets(), mTypefaceName);
         keyDeleteTimer = new Timer();
 
-        final TextServicesManager textServicesManager = (TextServicesManager) getSystemService(Context.TEXT_SERVICES_MANAGER_SERVICE);
-        mSpellCheckerSession = textServicesManager.newSpellCheckerSession(null, null, this, true);
+        //mInputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+        //mWordSeparators = getResources().getString(R.string.word_separators);
+
+        Locale locale = Locale.getDefault();
+        Log.i("SenseKeyboard-Service","onCreate Locale="+locale.toString());
+        final TextServicesManager mTextServicesManager = (TextServicesManager) getSystemService(Context.TEXT_SERVICES_MANAGER_SERVICE);
+
+        /*if (!mTextServicesManager.isSpellCheckerEnabled() || locale == null
+                || mTextServicesManager.getCurrentSpellCheckerSubtype(true) == null) {*/
+        mSpellCheckerSession = mTextServicesManager.newSpellCheckerSession(null, locale, this, false);
     }
 
 
@@ -340,10 +357,16 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
      */
     private void updateCandidates() {
         Log.i("SenseKeyboard-Service","updateCandidates()");
+        //mSpellCheckerSession = mTextServicesManager.newSpellCheckerSession(null, null, this, true);
+
         if (mComposing.length() > 0) {
             ArrayList<String> list = new ArrayList<String>();
             list.add(mComposing.toString());
-            //mSpellCheckerSession.getSentenceSuggestions(new TextInfo[] {new TextInfo(mComposing.toString())}, 5);
+            if (isSentenceSpellCheckSupported()) {
+                mSpellCheckerSession.getSentenceSuggestions(new TextInfo[] {new TextInfo(mComposing.toString())}, 3);
+            } else {
+                mSpellCheckerSession.getSuggestions(new TextInfo(mComposing.toString()), 3);
+            }
             setSuggestions(list, true, true);
         } else {
             setSuggestions(null, false, false);
@@ -411,12 +434,8 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
-        //TODO: when pressing one key twice, we receive first key event, then delete event and then second key event -> three clicks instead of two... :(
-
         Log.d("SenseKeyboard-Service","onKey(primaryCode="+primaryCode+", keyCodes="+keyCodes+")");
         KeyboardView view = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
-
-        InputConnection inputConnection = getCurrentInputConnection();
 
         // cancel timer - if new character was pressed before timer expired, no sound will be played, we want it because of behavior when second/third code of one key pressed
         keyDeleteTimer.cancel();
@@ -425,20 +444,10 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         switch(primaryCode){
             case Keyboard.KEYCODE_DELETE:
                 handleDelete();
-
-                keyDeleteTimer = new Timer();
-                keyDeleteTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        playClick(Keyboard.KEYCODE_DELETE);
-                    }
-                }, 50); // delay of 50ms
-
                 break;
 
             case KEYCODE_SPACE:
                 handleSpace();
-                playClick(KEYCODE_SPACE);
                 break;
 
             /*case Keyboard.KEYCODE_SHIFT:
@@ -448,37 +457,11 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 break;*/
 
             case Keyboard.KEYCODE_DONE:
-                playClick(Keyboard.KEYCODE_DONE);
-                switch (mEditorInfoImeAction) {
-                    case EditorInfo.IME_ACTION_GO:
-                        inputConnection.performEditorAction(EditorInfo.IME_ACTION_GO);
-                        Log.i("SenseKeyboard-Service","onKey-IME_ACTION_GO");
-                        break;
-                    case EditorInfo.IME_ACTION_NEXT:
-                        inputConnection.performEditorAction(EditorInfo.IME_ACTION_NEXT);
-                        Log.i("SenseKeyboard-Service","onKey-IME_ACTION_NEXT");
-                        break;
-                    case EditorInfo.IME_ACTION_SEARCH:
-                        inputConnection.performEditorAction(EditorInfo.IME_ACTION_SEARCH);
-                        Log.i("SenseKeyboard-Service","onKey-IME_ACTION_SEARCH");
-                        break;
-                    case EditorInfo.IME_ACTION_SEND:
-                        inputConnection.performEditorAction(EditorInfo.IME_ACTION_SEND);
-                        Log.i("SenseKeyboard-Service","onKey-IME_ACTION_SEND");
-                        break;
-                    case IME_ACTION_DEFAULT_LOCAL:
-                        inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
-                        Log.i("SenseKeyboard-Service","onKey-Key Enter event");
-                        break;
-                    default:
-                        Log.i("SenseKeyboard-Service","onKey-DEFAULT-UNKNOWN ACTION!!!");
-                        break;
-                }
+                handleDone();
                 /*ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                 Log.e("SenseKeyboard-Service","onKey-Key Enter event");*/
                 break;
             default:
-                playClick(primaryCode);
                 handleCharacter(primaryCode, keyCodes);
         }
     }
@@ -585,7 +568,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     @Override
     public void onGetSentenceSuggestions(SentenceSuggestionsInfo[] results) {
-        Log.i("SenseKeyboard-Service", "onGetSentenceSuggestions(results="+results+")");
+        Log.i("SenseKeyboard-Service", "onGetSentenceSuggestions(results="+results.toString()+")");
         final List<String> sb = new ArrayList<>();
         for (int i = 0; i < results.length; ++i) {
             final SentenceSuggestionsInfo sentenceSuggestionsInfo = results[i];
@@ -597,7 +580,23 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         }
         Log.d("SenseKeyboard-Service", "onGetSentenceSuggestions SUGGESTIONS: " + sb.toString());
         setSuggestions(sb, true, true);
+
+        /*
+        To only show suggestions for misspelled words, we will have to look at the flags associated with each SuggestionsInfo object.
+        A SuggestionsInfo object for a misspelled word has the RESULT_ATTR_LOOKS_LIKE_TYPO flag set.
+        Therefore, we must add code to ignore SuggestionsInfo objects where this flag is not set.
+        Add the following code to the onGetSentenceSuggestions method before the innermost loop begins:
+        if((result.getSuggestionsInfoAt(i).getSuggestionsAttributes() &
+            SuggestionsInfo.RESULT_ATTR_LOOKS_LIKE_TYPO) != SuggestionsInfo.RESULT_ATTR_LOOKS_LIKE_TYPO )
+            continue;
+         */
     }
+
+
+    /*@Override
+    public SentenceSuggestionsInfo[] onGetSentenceSuggestionsMultiple (TextInfo[] textInfos, int suggestionsLimit) {
+
+    }*/
 
 
     private void handleCharacter(int primaryCode, int[] keyCodes) {
@@ -619,37 +618,88 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         } else {
             getCurrentInputConnection().commitText(String.valueOf(code),1);
         }
+        playClick(primaryCode);
     }
 
 
     private void handleDelete() {
-        Log.i("SenseKeyboard-Service", "mComposing="+mComposing);
+        Log.i("SenseKeyboard-Service", "handleDelete()");
 
+        keyDeleteTimer = new Timer(); // timer here is because delete is sent by system when second/third char of key is pressed; new is because old one was canceled in calling function
         final int length = mComposing.length();
         InputConnection inputConnection = getCurrentInputConnection();
-        if (length > 1) {
-            //mComposing.delete(0, (mComposing.length() - 1));
-            //mComposing.append("COMP");
 
+        if (length > 1) { // we delete text from composing text, which contains more than one character
             mComposing.delete(length - 1, length);
             inputConnection.setComposingText(mComposing, 1); // Tohle mi vkládá podtrzeny text do radku kam pisu, kdyz vyberu text z nabidky, zameni se za podtrzeny text
             updateCandidates();
-        } else if (length > 0) {
+            keyDeleteTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    playClick(Keyboard.KEYCODE_DELETE);
+                }
+            }, 50); // delay of 50ms
+        } else if (length > 0) { // we handle text from composing text, which contains last one character
             mComposing.setLength(0);
-            inputConnection.commitText("", 0);
             updateCandidates();
-        } else {
-            //keyDownUp(KeyEvent.KEYCODE_DEL);
+            keyDeleteTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    getCurrentInputConnection().commitText("", 0); // only one char in composing text, we have to commit empty text here
+                    playClick(Keyboard.KEYCODE_DELETE);
+                }
+            }, 50); // delay of 50ms
+        } else { // composing text is empty, we will directly remove one character from input text field
             inputConnection.deleteSurroundingText(1, 0);
+            keyDeleteTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    playClick(Keyboard.KEYCODE_DELETE);
+                }
+            }, 50); // delay of 50ms
         }
         //updateShiftKeyState(getCurrentInputEditorInfo());
         //inputConnection.deleteSurroundingText(1, 0); // odkomentovani zde zpusobi, ze se změna projevuje hned a ne do composing (podtrzeneho) textu
     }
 
 
+    private void handleDone() {
+        InputConnection inputConnection = getCurrentInputConnection();
+        commitComposingText(); // first of all, commit composing text, because enter means composing text should be put into edited textbox
+
+        switch (mEditorInfoImeAction) {
+            case EditorInfo.IME_ACTION_GO:
+                inputConnection.performEditorAction(EditorInfo.IME_ACTION_GO);
+                Log.i("SenseKeyboard-Service","onKey-IME_ACTION_GO");
+                break;
+            case EditorInfo.IME_ACTION_NEXT:
+                inputConnection.performEditorAction(EditorInfo.IME_ACTION_NEXT);
+                Log.i("SenseKeyboard-Service","onKey-IME_ACTION_NEXT");
+                break;
+            case EditorInfo.IME_ACTION_SEARCH:
+                inputConnection.performEditorAction(EditorInfo.IME_ACTION_SEARCH);
+                Log.i("SenseKeyboard-Service","onKey-IME_ACTION_SEARCH");
+                break;
+            case EditorInfo.IME_ACTION_SEND:
+                inputConnection.performEditorAction(EditorInfo.IME_ACTION_SEND);
+                Log.i("SenseKeyboard-Service","onKey-IME_ACTION_SEND");
+                break;
+            case IME_ACTION_DEFAULT_LOCAL:
+                inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                Log.i("SenseKeyboard-Service","onKey-Key Enter event");
+                break;
+            default:
+                Log.i("SenseKeyboard-Service","onKey-DEFAULT-UNKNOWN ACTION!!!");
+                break;
+        }
+        playClick(Keyboard.KEYCODE_DONE);
+    }
+
+
     private void handleSpace() {
-        commitComposingText();
+        commitComposingText(); // first of all, commit composing text, because space means composing text should be put into edited textbox
         getCurrentInputConnection().commitText(String.valueOf((char) KEYCODE_SPACE),1);
+        playClick(KEYCODE_SPACE);
     }
 
 
@@ -689,11 +739,12 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         return mDeviceInMoveFlag;
     }
 
-    private List<String> getSuggestions() {
-        mSuggestions.add("dve");
-        mSuggestions.add("tri");
-        return mSuggestions;
+    private boolean isSentenceSpellCheckSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
+    }
 
+    private List<String> getSuggestions() {
+        return mSuggestions;
     }
 
     private void setSuggestions(List<String> suggestions) {
