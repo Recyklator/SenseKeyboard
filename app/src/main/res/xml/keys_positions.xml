@@ -6,7 +6,7 @@
     <Row>
         <Key android:codes="44,46,63,33" android:keyLabel=",.\?!" android:keyEdgeFlags="left"/>
         <Key android:codes="97,98,99" android:keyLabel="abc" android:contentDescription="@string/KeyABC"/>
-        <Key android:codes="100,101,102" android:keyLabel="def" android:keyEdgeFlags="right"/>
+        <Key android:codes="100,101,102" android:keyLabel="def" android:keyEdgeFlags="right" android:text="text"/>
     </Row>
     <Row>
        <Key android:codes="103,104,105" android:keyLabel="ghi" android:keyEdgeFlags="left"/>
@@ -19,7 +19,7 @@
        <Key android:codes="119,120,121,122" android:keyLabel="wxyz" android:keyEdgeFlags="right"/>
    </Row>
    <Row android:rowEdgeFlags="bottom">
-       <Key android:codes="-5" android:keyLabel="DEL" android:isRepeatable="true" android:keyEdgeFlags="left"/>
+       <Key android:codes="-5" android:keyLabel="DEL" android:isRepeatable="false" android:keyEdgeFlags="left"/>
        <Key android:codes="32" android:keyLabel="SPACE"/>
        <Key android:codes="-4" android:keyLabel="ENTER" android:keyEdgeFlags="right"/>
    </Row>
