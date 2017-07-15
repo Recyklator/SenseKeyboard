@@ -93,6 +93,8 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     // https://developer.android.com/guide/topics/ui/accessibility/index.html
     // https://developer.android.com/topic/libraries/support-library/features.html
     // https://developer.android.com/reference/android/view/accessibility/package-summary.html
+    // https://developer.android.com/reference/android/graphics/Canvas.html
+    // https://developer.android.com/training/gestures/detector.html
 
     @Override
     public void onCreate() { // causes application fail (even empty method), don't know why...

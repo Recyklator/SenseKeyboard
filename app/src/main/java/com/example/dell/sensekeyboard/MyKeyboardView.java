@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,8 @@ import java.util.List;
 public class MyKeyboardView extends KeyboardView {
 
     private AccessibilityNodeProvider mAccessibilityNodeProvider;
+    private MyGestureListener mMyGestureListener;
+    private GestureDetector mGestureDetector;
     //private Keyboard.Key key;
     private String mLastFocusedKeyCode;
     private String mLastReportedCode;
@@ -33,6 +36,14 @@ public class MyKeyboardView extends KeyboardView {
 
         mLastFocusedKeyCode = "";
         mLastReportedCode = "";
+        mMyGestureListener = new MyGestureListener();
+
+        // Create an object of our Custom Gesture Detector Class
+        MyGestureListener myGestureListener = new MyGestureListener();
+        // Create a GestureDetector
+        mGestureDetector = new GestureDetector(this.getContext(), myGestureListener);
+        // Attach listeners that'll be called for double-tap and related gestures
+        //mGestureDetector.setOnDoubleTapListener(customGestureDetector);
     }
 
    /*
@@ -143,6 +154,8 @@ public class MyKeyboardView extends KeyboardView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
+        this.mGestureDetector.onTouchEvent(event);
+
 
         // Listening for the down and up touch events
         switch (event.getAction()) {
