@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 
@@ -24,9 +25,11 @@ import java.util.List;
 
 public class MyKeyboardView extends KeyboardView {
 
+    private AccessibilityManager mAccessibilityManager;
     private AccessibilityNodeProvider mAccessibilityNodeProvider;
     private MyGestureListener mMyGestureListener;
     private GestureDetector mGestureDetector;
+    private SenseKeyboardService mSenseKeyboardService;
     //private Keyboard.Key key;
     private String mLastFocusedKeyCode;
     private String mLastReportedCode;
@@ -36,15 +39,22 @@ public class MyKeyboardView extends KeyboardView {
 
         mLastFocusedKeyCode = "";
         mLastReportedCode = "";
-        mMyGestureListener = new MyGestureListener();
 
         // Create an object of our Custom Gesture Detector Class
-        MyGestureListener myGestureListener = new MyGestureListener();
+        MyGestureListener myGestureListener = new MyGestureListener(this);
         // Create a GestureDetector
         mGestureDetector = new GestureDetector(this.getContext(), myGestureListener);
         // Attach listeners that'll be called for double-tap and related gestures
         //mGestureDetector.setOnDoubleTapListener(customGestureDetector);
+        mSenseKeyboardService = (SenseKeyboardService) context;
+        mAccessibilityManager = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
     }
+
+
+    public void setKeyboardService(SenseKeyboardService senseKeyboardService) {
+        //mSenseKeyboardService = senseKeyboardService;
+    }
+
 
    /*
     * (API Level 4) The system calls this method when your custom view generates an accessibility event.
@@ -154,48 +164,35 @@ public class MyKeyboardView extends KeyboardView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
-        this.mGestureDetector.onTouchEvent(event);
+        Boolean handledByGestureDetector = this.mGestureDetector.onTouchEvent(event);
 
+        if(!handledByGestureDetector) {
+            // Listening for the down and up touch events
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    Log.d("SenseKeyboard", "MyKeyboardView onTouchEvent() DOWN");
+                    //handleMotionEventForAccessibility(event);
+                    return true;
 
-        // Listening for the down and up touch events
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() DOWN");
-                return true;
+                case MotionEvent.ACTION_UP:
+                    //Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() UP");
+                    return true;
 
-            case MotionEvent.ACTION_UP:
-                Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() UP");
-                return true;
+                case MotionEvent.ACTION_HOVER_MOVE:
+                    //Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() HOVER_MOVE");
+                    return true;
 
-            case MotionEvent.ACTION_HOVER_MOVE:
-                Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() HOVER_MOVE");
-                return true;
+                case MotionEvent.ACTION_MOVE:
+                    //Log.d("SenseKeyboard", "MyKeyboardView onTouchEvent() MOVE");
 
-            case MotionEvent.ACTION_MOVE:
-                //Log.d("SenseKeyboard", "MyKeyboardView onTouchEvent() MOVE");
-                float fx = event.getX();
-                float fy = event.getY();
-                int x = Math.round(fx);
-                int y = Math.round(fy);
-
-                Keyboard keyboard = super.getKeyboard();
-                List<Keyboard.Key> keysList = keyboard.getKeys();
-                for(Keyboard.Key key : keysList) {
-                    if(key.isInside(x, y)) {
-                        char code = (char)key.codes[0];
-                        setLastFocusedKeyCode(String.valueOf(code));
-                        break;
-                    }
-                }
-                if(!isFocusedCodeEqualToReported()){
-                    super.announceForAccessibility(getLastFocusedKeyCode());
-                    setLastReportedCode(getLastFocusedKeyCode());
-                }
+                    handleMotionEventForAccessibility(event);
                 /*Log.e("SenseKeyboard", "MyKeyboardView announceForAccessibility():"+getFocusedKeyCode());
                 super.announceForAccessibility(getFocusedKeyCode());
                 setLastReportedCode(getFocusedKeyCode());*/
-                return true;
+                    return true;
+            }
         }
+
         return false; // Return false for other touch events
     }
 
@@ -203,7 +200,7 @@ public class MyKeyboardView extends KeyboardView {
     @Override
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
 
-        //if (mAccessibilityNodeProvider == null) {
+        if (mAccessibilityNodeProvider == null) {
 
             mAccessibilityNodeProvider = new AccessibilityNodeProvider() {
                 public boolean performAction(int action, int virtualDescendantId, Bundle bundle) {
@@ -219,11 +216,12 @@ public class MyKeyboardView extends KeyboardView {
                 }
 
                 public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualDescendantId) {
-                    Log.i("SenseKeyboard", "MyKeyboardView createAccessibilityNodeInfo()");
+                    Log.d("SenseKeyboard", "MyKeyboardView createAccessibilityNodeInfo()");
                     AccessibilityNodeInfo accessibilityNodeInfo = AccessibilityNodeInfo.obtain();
-                    /*accessibilityNodeInfo.setContentDescription(getFocusedKeyString());
-                    accessibilityNodeInfo.setText(getFocusedKeyString());*/
-                    //accessibilityNodeInfo.
+                    /*String test = null;
+                    accessibilityNodeInfo.setContentDescription(test);*/
+                    //accessibilityNodeInfo.setText(getLastFocusedKeyCode());
+                    //setLastReportedCode(getLastFocusedKeyCode());
                     /*Bundle arguments = new Bundle();
                     arguments.putInt(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, 1);
                     accessibilityNodeInfo.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, arguments);*/
@@ -236,8 +234,69 @@ public class MyKeyboardView extends KeyboardView {
                     return accessibilityNodeInfo;
                 }
             };
-        //}
+        }
         return mAccessibilityNodeProvider;
+    }
+
+
+    public void onLongPressGesture() {
+        mSenseKeyboardService.onLongPressGesture();
+    }
+
+
+    public void onScrollRightGesture() {
+        String suggestion = mSenseKeyboardService.onScrollRightGesture();
+        sendAccessibilityText(suggestion);
+    }
+
+
+    public void sendAccessibilityText(String accessibilityText) {
+
+        if (mAccessibilityManager.isEnabled() && accessibilityText != null && !accessibilityText.isEmpty()) {
+            Log.e("SenseKeyboard", "MyKeyboardView setAccessibilityText(accessibilityText="+accessibilityText+")");
+            AccessibilityEvent e = AccessibilityEvent.obtain();
+            e.setEventType(AccessibilityEvent.TYPE_ANNOUNCEMENT);
+            e.setClassName(getClass().getName());
+            e.setPackageName(this.getContext().getPackageName());
+            e.getText().add(accessibilityText);
+            mAccessibilityManager.sendAccessibilityEvent(e);
+        }
+        /*if(accessibilityText != null && !accessibilityText.isEmpty()) {
+            Log.e("SenseKeyboard", "MyKeyboardView setAccessibilityText(accessibilityText="+accessibilityText+")");
+            super.announceForAccessibility(accessibilityText);
+        }*/
+    }
+
+
+    private String extractKeyCharFromMotionEvent(MotionEvent event) {
+
+        String pressedKeyChar = "";
+        float fx = event.getX();
+        float fy = event.getY();
+        int x = Math.round(fx);
+        int y = Math.round(fy);
+
+        Keyboard keyboard = super.getKeyboard();
+        List<Keyboard.Key> keysList = keyboard.getKeys();
+        for(Keyboard.Key key : keysList) {
+            if(key.isInside(x, y)) {
+                char code = (char)key.codes[0];
+                pressedKeyChar = String.valueOf(code);
+                break;
+            }
+        }
+        return pressedKeyChar;
+    }
+
+
+    private void handleMotionEventForAccessibility(MotionEvent event) {
+        String extractedKeyCharacter = extractKeyCharFromMotionEvent(event);
+        setLastFocusedKeyCode(extractedKeyCharacter);
+
+        if(!isFocusedCodeEqualToReported()){
+            sendAccessibilityText(getLastFocusedKeyCode());
+            setLastReportedCode(getLastFocusedKeyCode());
+        }
     }
 
 
@@ -246,7 +305,7 @@ public class MyKeyboardView extends KeyboardView {
     }
 
     private void setLastFocusedKeyCode(String lastFocusedKeyCode) {
-        Log.e("SenseKeyboard", "MyKeyboardView setLastFocusedKeyCode(lastFocusedKeyCode = "+lastFocusedKeyCode+")");
+        //Log.d("SenseKeyboard", "MyKeyboardView setLastFocusedKeyCode(lastFocusedKeyCode = "+lastFocusedKeyCode+")");
         mLastFocusedKeyCode = lastFocusedKeyCode;
     }
 

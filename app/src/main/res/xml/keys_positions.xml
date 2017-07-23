@@ -2,11 +2,11 @@
     android:keyWidth="33.33333%p"
     android:horizontalGap="0dp"
     android:verticalGap="0dp"
-    android:keyHeight="10%p">
+    android:keyHeight="17%p">
     <Row>
         <Key android:codes="44,46,63,33" android:keyLabel=",.\?!" android:keyEdgeFlags="left"/>
-        <Key android:codes="97,98,99" android:keyLabel="abc" android:contentDescription="@string/KeyABC"/>
-        <Key android:codes="100,101,102" android:keyLabel="def" android:keyEdgeFlags="right" android:text="text"/>
+        <Key android:codes="97,98,99" android:keyLabel="abc"/>
+        <Key android:codes="100,101,102" android:keyLabel="def" android:keyEdgeFlags="right"/>
     </Row>
     <Row>
        <Key android:codes="103,104,105" android:keyLabel="ghi" android:keyEdgeFlags="left"/>
