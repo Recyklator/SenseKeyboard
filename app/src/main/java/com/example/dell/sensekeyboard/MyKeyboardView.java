@@ -19,6 +19,8 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.lang.Thread.sleep;
+
 /**
  * Created by Dell on 7.7.2017.
  */
@@ -33,12 +35,16 @@ public class MyKeyboardView extends KeyboardView {
     //private Keyboard.Key key;
     private String mLastFocusedKeyCode;
     private String mLastReportedCode;
+    private Boolean mScrollGestureInProgress;
+    private Boolean mLongPressInProgress;
 
     public MyKeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         mLastFocusedKeyCode = "";
         mLastReportedCode = "";
+        mScrollGestureInProgress = false;
+        mLongPressInProgress = false;
 
         // Create an object of our Custom Gesture Detector Class
         MyGestureListener myGestureListener = new MyGestureListener(this);
@@ -166,7 +172,13 @@ public class MyKeyboardView extends KeyboardView {
         super.onTouchEvent(event);
         Boolean handledByGestureDetector = this.mGestureDetector.onTouchEvent(event);
 
-        if(!handledByGestureDetector) {
+        try {
+            sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        if(!handledByGestureDetector && !mScrollGestureInProgress) {
             // Listening for the down and up touch events
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -190,10 +202,12 @@ public class MyKeyboardView extends KeyboardView {
                 super.announceForAccessibility(getFocusedKeyCode());
                 setLastReportedCode(getFocusedKeyCode());*/
                     return true;
+
+                default:
+                    return false; // Return false for other touch events
             }
         }
-
-        return false; // Return false for other touch events
+        return true;
     }
 
 
@@ -244,9 +258,32 @@ public class MyKeyboardView extends KeyboardView {
     }
 
 
-    public void onScrollRightGesture() {
-        String suggestion = mSenseKeyboardService.onScrollRightGesture();
+    public void onSwipeRightGesture() {
+        String suggestion = mSenseKeyboardService.onSwipeRightGesture();
         sendAccessibilityText(suggestion);
+    }
+
+
+    public void onSwipeLeftGesture() {
+        String suggestion = mSenseKeyboardService.onSwipeLeftGesture();
+        sendAccessibilityText(suggestion);
+    }
+
+
+    public void onSwipeDownGesture() {
+        mSenseKeyboardService.onSwipeDownGesture();
+    }
+
+
+    public void setGestureInProgressFlag(Boolean gestureInProgressFlag) {
+        if(mScrollGestureInProgress != gestureInProgressFlag) {
+            Log.e("SenseKeyboard", "MyKeyboardView setGestureInProgressFlag(gestureInProgressFlag=" + gestureInProgressFlag + ")");
+            mScrollGestureInProgress = gestureInProgressFlag;
+        }
+    }
+
+    public Boolean isScrollGestureInProgress() {
+        return mScrollGestureInProgress;
     }
 
 

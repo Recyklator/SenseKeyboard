@@ -30,7 +30,7 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CandidateView extends View {
+public class MyCandidatesView extends View {
 
     private static final int OUT_OF_BOUNDS = -1;
 
@@ -40,11 +40,13 @@ public class CandidateView extends View {
     private int mTouchX = OUT_OF_BOUNDS;
     private Drawable mSelectionHighlight;
     private boolean mTypedWordValid;
+    private Integer mHighlightedWord;
 
     private Rect mBgPadding;
 
     private static final int MAX_SUGGESTIONS = 32;
     private static final int SCROLL_PIXELS = 20;
+    private static final int NO_MANUAL_HIGHLIGHT = -1;
 
     private int[] mWordWidth = new int[MAX_SUGGESTIONS];
     private int[] mWordX = new int[MAX_SUGGESTIONS];
@@ -69,7 +71,7 @@ public class CandidateView extends View {
      * Construct a CandidateView for showing suggested words for completion.
      * @param context
      */
-    public CandidateView(Context context) {
+    public MyCandidatesView(Context context) {
         super(context);
         mSelectionHighlight = context.getResources().getDrawable(
                 android.R.drawable.list_selector_background);
@@ -118,6 +120,8 @@ public class CandidateView extends View {
         setWillNotDraw(false);
         setHorizontalScrollBarEnabled(false);
         setVerticalScrollBarEnabled(false);
+
+        mHighlightedWord = NO_MANUAL_HIGHLIGHT;
     }
 
     /**
@@ -201,12 +205,24 @@ public class CandidateView extends View {
             }
 
             if (canvas != null) {
-                if ((i == 1 && !typedWordValid) || (i == 0 && typedWordValid)) {
-                    paint.setFakeBoldText(true);
-                    paint.setColor(mColorRecommended);
-                } else if (i != 0) {
-                    paint.setColor(mColorOther);
+                if(mHighlightedWord == NO_MANUAL_HIGHLIGHT) {
+                    // no manual highlight established by user gesture, so go through standard part of code
+                    if ((i == 1 && !typedWordValid) || (i == 0 && typedWordValid)) {
+                        paint.setFakeBoldText(true);
+                        paint.setColor(mColorRecommended);
+                    } else if (i != 0) {
+                        paint.setColor(mColorOther);
+                    }
+                } else {
+                    // manual highlight established by user gesture, so highlight proper word
+                    if (i == mHighlightedWord) {
+                        paint.setFakeBoldText(true);
+                        paint.setColor(mColorRecommended);
+                    } else {
+                        paint.setColor(mColorOther);
+                    }
                 }
+
                 canvas.drawText(suggestion, x + X_GAP, y, paint);
                 paint.setColor(mColorOther);
                 canvas.drawLine(x + wordWidth + 0.5f, bgPadding.top,
@@ -257,6 +273,7 @@ public class CandidateView extends View {
     public void clear() {
         mSuggestions = EMPTY_LIST;
         mTouchX = OUT_OF_BOUNDS;
+        mHighlightedWord = NO_MANUAL_HIGHLIGHT;
         mSelectedIndex = -1;
         invalidate();
     }
@@ -316,8 +333,19 @@ public class CandidateView extends View {
         invalidate();
     }
 
+    /**
+     * Function redraws candidate view and before that, member variable mHighlightedWord is set so
+     * draw function could highlight proper word
+     * @param highlightedWord is integer, specifying position of highlighted suggestion word in suggestion list
+     */
+    public void changeHighlightedSuggestion(Integer highlightedWord) {
+        mHighlightedWord = highlightedWord;
+        invalidate();
+    }
+
     private void removeHighlight() {
         mTouchX = OUT_OF_BOUNDS;
+        mHighlightedWord = NO_MANUAL_HIGHLIGHT;
         invalidate();
     }
 }

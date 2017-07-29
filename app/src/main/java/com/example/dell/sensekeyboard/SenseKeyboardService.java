@@ -37,6 +37,8 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static java.lang.Thread.sleep;
+
 
 public class SenseKeyboardService extends InputMethodService implements KeyboardView.OnKeyboardActionListener,
         SpellCheckerSession.SpellCheckerSessionListener {
@@ -45,6 +47,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     private static final int KEYCODE_SPACE = 32;
 
     private boolean caps = false;
+    private Boolean mSkipKeyAfterLongpress = false;
 
     // LWM feature flag, default value is false = off
     private Boolean mLwmFeatureActive = false;
@@ -62,14 +65,16 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     private static final String CLASS_NAME = SenseKeyboardService.class.getSimpleName();
 
     private Integer mEditorInfoImeAction = null; // keep editor info object, because we will get it in onStartInputView() method but will need it in onKey() method
+
     private static final int IME_ACTION_DEFAULT_LOCAL = 999999;
     private static final int NO_SUGGESTION_SELECTED = -1;
+    private static final int FIRST_SUGGESTION_SELECTED = 0;
 
 
     private Typeface mTypeface;
     private String mTypefaceName = "fonts/ubuntu/Ubuntu-R.ttf";//Jomolhari-alpha3c-0605331.ttf";//"DDC_Uchen.ttf"
 
-    private CandidateView mCandidateView;
+    private MyCandidatesView mMyCandidatesView;
     private CompletionInfo[] mCompletions; // vybírá se z něj v pickSuggestionsManually
     private StringBuilder mComposing; // podtrzeny text v radku kam pisu, kdyz vyberu text z nabidky (mCompletions?), zameni se za podtrzeny text
     private List<String> mSuggestions;
@@ -214,9 +219,9 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         Log.i(CLASS_NAME_STRING,"onCreateCandidatesView()");
         mSuggestionFocussed = NO_SUGGESTION_SELECTED;
         //mCandidateView = super.onCreateCandidatesView();
-        mCandidateView = new CandidateView(this);
-        mCandidateView.setService(this);
-        return mCandidateView;
+        mMyCandidatesView = new MyCandidatesView(this);
+        mMyCandidatesView.setService(this);
+        return mMyCandidatesView;
     }
 
 
@@ -313,7 +318,8 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
         final TextServicesManager textServicesManager = (TextServicesManager) getSystemService(Context.TEXT_SERVICES_MANAGER_SERVICE);
         Locale locale = Locale.getDefault();
-        InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);        InputMethodSubtype subtype = inputMethodManager.getCurrentInputMethodSubtype();
+        InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodSubtype subtype = inputMethodManager.getCurrentInputMethodSubtype();
         Log.i(CLASS_NAME_STRING,"onCreate Locale="+locale.toString());
         //locale = new Locale("cs");
         mSpellCheckerSession = textServicesManager.newSpellCheckerSession(null, locale, this, false);
@@ -404,10 +410,11 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
             } else {
                 mSpellCheckerSession.getSuggestions(new TextInfo(mComposing.toString()), 3);
             }
-            // setSuggestions(list, true, true); // zakomentene kvuli padani protoze po pridani timeru volam z jineho threadu
-        } /*else {
+            setSuggestions(list, true, true); // zakomentene kvuli padani protoze po pridani timeru volam z jineho threadu
+        } else {
             setSuggestions(null, false, false); // zakomentene kvuli padani protoze po pridani timeru volam z jineho threadu
-        }*/
+        }
+        mSuggestionFocussed = FIRST_SUGGESTION_SELECTED;
     }
 
     /**
@@ -419,7 +426,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     @Override
     public void onDisplayCompletions(CompletionInfo[] completions) {
         // neznamo kdy a proc se vola, zatim videno jen na lenovo tabletu
-        Log.i(CLASS_NAME_STRING,"onDisplayCompletions() completions=" + completions);
+        Log.e(CLASS_NAME_STRING,"onDisplayCompletions() !!!!! completions=" + completions);
         //throw new RuntimeException("onDisplayCompletions()");
         mCompletions = completions;
         if (completions == null) {
@@ -443,15 +450,17 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         //Log.d(CLASS_NAME_STRING,"setSuggestions() suggestions=" + suggestions + ", completions=" + completions + ", typedWordValid=" + typedWordValid);
         if (suggestions != null && suggestions.size() > 0) {
             setCandidatesViewShown(true);
-        } /*else if (isExtractViewShown()) {
+        } else if (isExtractViewShown()) {
             setCandidatesViewShown(true);
-        }*/
+        } else {
+            setCandidatesViewShown(false);
+        }
 
         setSuggestions(suggestions);
         suggestions = getSuggestions(); // TEMP check !!
 
-        if (mCandidateView != null) {
-            mCandidateView.setSuggestions(suggestions, completions, typedWordValid);
+        if (mMyCandidatesView != null) {
+            mMyCandidatesView.setSuggestions(suggestions, completions, typedWordValid);
         }
     }
 
@@ -472,7 +481,24 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
+        try {
+            sleep(20);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         Log.e(CLASS_NAME_STRING,"onKey(primaryCode="+primaryCode+", keyCodes="+keyCodes+")");
+
+        if(mMyKeyboardView.isScrollGestureInProgress()) {
+            Log.e(CLASS_NAME_STRING,"onKey - ScrollGestureInProgress - SKIP");
+            return;
+        }
+
+        if(mSkipKeyAfterLongpress) {
+            Log.e(CLASS_NAME_STRING,"onKey - mSkipKeyAfterLongpress - SKIP");
+            mSkipKeyAfterLongpress = false;
+            return;
+        }
+
         KeyboardView view = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
 
         // cancel timer - if new character was pressed before timer expired, no sound will be played, we want it because of behavior when second/third code of one key pressed
@@ -507,8 +533,8 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 Log.e(CLASS_NAME_STRING,"onKey-Key Enter event");*/
                 break;
             default:
-                mKeyPressTimer.schedule(new KeyPressTimerTask(primaryCode, keyCodes, this) {}, 50); // delay of 50ms
-                //handleCharacter(primaryCode, keyCodes);
+                //mKeyPressTimer.schedule(new KeyPressTimerTask(primaryCode, keyCodes, this) {}, 50); // delay of 50ms
+                handleCharacter(primaryCode, keyCodes);
         }
     }
 
@@ -744,8 +770,11 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     private void handleSpace() {
         commitComposingText(); // first of all, commit composing text, because space means composing text should be put into edited textbox
-        getCurrentInputConnection().commitText(String.valueOf((char) KEYCODE_SPACE),1);
+        getCurrentInputConnection().commitText(String.valueOf((char) KEYCODE_SPACE),1); // add also the space key
         playClick(KEYCODE_SPACE);
+
+        mSuggestionFocussed = NO_SUGGESTION_SELECTED;
+        super.setCandidatesViewShown(false);
     }
 
 
@@ -754,9 +783,9 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         if (mCompletions != null && index >= 0 && index < mCompletions.length) {
             CompletionInfo completionInfo = mCompletions[index];
             getCurrentInputConnection().commitCompletion(completionInfo);
-            if (mCandidateView != null) {
-                mCandidateView.clear();
-            }
+            /*if (mMyCandidatesView != null) {
+                mMyCandidatesView.clear();
+            }*/
             //updateShiftKeyState(getCurrentInputEditorInfo());
         } else if (mComposing.length() > 0) {
             Log.d(CLASS_NAME_STRING, "pickSuggestionManually ELSE SECTION");
@@ -765,6 +794,11 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
             }
             commitComposingText();
         }
+        if (mMyCandidatesView != null) {
+            mMyCandidatesView.clear();
+        }
+        mSuggestionFocussed = NO_SUGGESTION_SELECTED;
+        super.setCandidatesViewShown(false);
     }
 
 
@@ -799,13 +833,16 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         } else {
             mSuggestions = suggestions;
         }
+        mSuggestions.add(mComposing.toString());
+
         // TODO temp for test purposes
-        List<String> tmp = new ArrayList<String>();
+        /*List<String> tmp = new ArrayList<String>();
+        tmp.add(mComposing.toString());
         tmp.add("skakal");
         tmp.add("pes");
         tmp.add("pres");
         tmp.add("oves");
-        mSuggestions = new ArrayList<String>(tmp);
+        mSuggestions = new ArrayList<String>(tmp);*/
         //Log.d(CLASS_NAME_STRING, "setSuggestions() mSuggestions="+mSuggestions);
     }
 
@@ -819,8 +856,11 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     /**
      * Method called from MyKeyboardView, originally came from MyGestureListener
+     * Methods takes next word from suggestion list, sets it as highlighted (which forces redraw
+     * of candidate view after it is invalidated) and returns newly focused word
+     * (focus in meaning of this method is only virtual, because it is made by gestures)
      */
-    public String onScrollRightGesture() {
+    public String onSwipeRightGesture() {
 
         String suggestion = "";
 
@@ -831,14 +871,52 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 mSuggestionFocussed = 0;
                 suggestion = mSuggestions.get(mSuggestionFocussed);
             }
+            if(mMyCandidatesView != null) {
+                mMyCandidatesView.changeHighlightedSuggestion(mSuggestionFocussed);
+            }
         }
 
         return suggestion;
     }
 
 
-    public Boolean onLongPressGesture() {
-        return true;
+    /**
+     * Method called from MyKeyboardView, originally came from MyGestureListener
+     * Methods takes next word from suggestion list, sets it as highlighted (which forces redraw
+     * of candidate view after it is invalidated) and returns newly focused word
+     * (focus in meaning of this method is only virtual, because it is made by gestures)
+     */
+    public String onSwipeLeftGesture() {
+
+        String suggestion = "";
+
+        if(mSuggestions != null && mSuggestions.size() > 0) {
+            if(--mSuggestionFocussed >= 0) {
+                suggestion = mSuggestions.get(mSuggestionFocussed);
+            } else {
+                mSuggestionFocussed = mSuggestions.size() - 1;
+                suggestion = mSuggestions.get(mSuggestionFocussed);
+            }
+            if(mMyCandidatesView != null) {
+                mMyCandidatesView.changeHighlightedSuggestion(mSuggestionFocussed);
+            }
+        }
+
+        return suggestion;
+    }
+
+
+    /**
+     * Method called from MyKeyboardView, originally came from MyGestureListener
+     *
+     */
+    public void onSwipeDownGesture() {
+        pickSuggestionManually(mSuggestionFocussed);
+    }
+
+
+    public void onLongPressGesture() {
+        //mSkipKeyAfterLongpress = true;
     }
 
 

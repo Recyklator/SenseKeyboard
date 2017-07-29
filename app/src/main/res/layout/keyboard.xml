@@ -10,4 +10,4 @@
     android:labelTextSize="20dp"
     android:contentDescription="\u00A0"
 />
-    <!--android:contentDescription="@null" nezabira zde ani v kodu, cetlo desetinna carka na samsungu a tecka na lenovu, skvevy workaround "\u00A0"-->
+    <!--android:contentDescription="@null" nezabira zde ani v kodu, cetlo desetinna carka na samsungu a tecka na lenovu, skvely workaround "\u00A0"-->
