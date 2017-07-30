@@ -13,9 +13,7 @@ import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -23,15 +21,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 import android.view.textservice.SentenceSuggestionsInfo;
 import android.view.textservice.SpellCheckerSession;
-import android.view.textservice.SpellCheckerSubtype;
 import android.view.textservice.SuggestionsInfo;
 import android.view.textservice.TextInfo;
 import android.view.textservice.TextServicesManager;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
@@ -45,9 +39,13 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     private static final String CLASS_NAME_STRING = SenseKeyboardService.class.getSimpleName();
     private static final int KEYCODE_SPACE = 32;
+    private static final int KEYCODE_DOT = 46;
+    private static final int KEYCODE_QUESTION_MARK = 63;
+    private static final int KEYCODE_EXCLAMATION_MARK = 33;
 
     private boolean caps = false;
     private Boolean mSkipKeyAfterLongpress = false;
+    private Boolean mIsBeginningOfNewSentence = true; // on the beginning we pretend there is always new sentence
 
     // LWM feature flag, default value is false = off
     private Boolean mLwmFeatureActive = false;
@@ -104,6 +102,8 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     // https://developer.android.com/reference/android/graphics/Canvas.html
     // https://developer.android.com/training/gestures/detector.html
     // https://support.google.com/accessibility/android/answer/6151827?hl=en
+
+    // TODO: při změně pozice kurzoru vyčistot composing!!
 
     @Override
     public void onCreate() { // causes application fail (even empty method), don't know why...
@@ -252,12 +252,14 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 // Numbers and dates default to the symbols keyboard, with
                 // no extra features.
                 //mCurKeyboard = mSymbolsKeyboard;
+                mIsBeginningOfNewSentence = false;
                 break;
 
             case InputType.TYPE_CLASS_PHONE:
                 // Phones will also default to the symbols keyboard, though
                 // often you will want to have a dedicated phone keyboard.
                 //mCurKeyboard = mSymbolsKeyboard;
+                mIsBeginningOfNewSentence = false;
                 break;
 
             case InputType.TYPE_CLASS_TEXT:
@@ -266,6 +268,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 // be doing predictive text (showing candidates as the
                 // user types).
                 //mCurKeyboard = mQwertyKeyboard;
+                mIsBeginningOfNewSentence = true;
                 mDisplayComposingText = true;
 
                 // We now look for a few special variations of text that will
@@ -275,6 +278,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                         variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
                     // Do not display predictions / what the user is typing
                     // when they are entering a password.
+                    mIsBeginningOfNewSentence = false;
                     mDisplayComposingText = false;
                 }
 
@@ -283,6 +287,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                         || variation == InputType.TYPE_TEXT_VARIATION_FILTER) {
                     // Our predictions are not useful for e-mail addresses
                     // or URIs.
+                    mIsBeginningOfNewSentence = false;
                     mDisplayComposingText = false;
                 }
 
@@ -292,6 +297,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                     // to supply their own.  We only show the editor's
                     // candidates when in fullscreen mode, otherwise relying
                     // own it displaying its own UI.
+                    mIsBeginningOfNewSentence = false;
                     mDisplayComposingText = false;
                     //mCompletionOn = isFullscreenMode();
                 }
@@ -410,11 +416,13 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
             } else {
                 mSpellCheckerSession.getSuggestions(new TextInfo(mComposing.toString()), 3);
             }
-            setSuggestions(list, true, true); // zakomentene kvuli padani protoze po pridani timeru volam z jineho threadu
+            setSuggestions(list, true, true);
+            mSuggestionFocussed = FIRST_SUGGESTION_SELECTED;
         } else {
-            setSuggestions(null, false, false); // zakomentene kvuli padani protoze po pridani timeru volam z jineho threadu
+            setSuggestions(null, false, false);
+            hideCandidateView();
         }
-        mSuggestionFocussed = FIRST_SUGGESTION_SELECTED;
+
     }
 
     /**
@@ -674,8 +682,13 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     public void handleCharacter(int primaryCode, int[] keyCodes) {
 
         char code = (char)primaryCode;
-        if(Character.isLetter(code) && caps) {
+        if(Character.isLetter(code) && (caps || mIsBeginningOfNewSentence)) {
             code = Character.toUpperCase(code);
+            if(mIsBeginningOfNewSentence) {
+                mIsBeginningOfNewSentence = false;
+            }
+        } else if(isSentenceEnding(code)) {
+            mIsBeginningOfNewSentence = true;
         }
         /*if (isInputViewShown()) {
             if (mInputView.isShifted()) {
@@ -683,7 +696,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
             }
         }*/
         if (mDisplayComposingText) {
-            mComposing.append((char) primaryCode);
+            mComposing.append(code);
             getCurrentInputConnection().setComposingText(mComposing, 1); // Tohle mi vkládá podtrzeny text do radku kam pisu, kdyz vyberu text z nabidky, zameni se za podtrzeny text
             //updateShiftKeyState(getCurrentInputEditorInfo());
             updateCandidates();
@@ -700,6 +713,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         keyDeleteTimer = new Timer(); // timer here is because delete is sent by system when second/third char of key is pressed; new is because old one was canceled in calling function
         final int length = mComposing.length();
         InputConnection inputConnection = getCurrentInputConnection();
+        boolean charWillBeDeleted = false;
 
         if (length > 1) { // we delete text from composing text, which contains more than one character
             mComposing.delete(length - 1, length);
@@ -714,6 +728,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         } else if (length > 0) { // we handle text from composing text, which contains last one character
             mComposing.setLength(0);
             updateCandidates();
+            charWillBeDeleted = true;
             keyDeleteTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -730,6 +745,30 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 }
             }, 50); // delay of 50ms
         }
+
+        CharSequence lastCharsBeforeCursor = inputConnection.getTextBeforeCursor(3, 0); // take 3 characters before cursor, 0 is flag - "without test style"
+        String lastNonwhiteCharsTemp = lastCharsBeforeCursor.toString().trim(); // convert char sequence to string and clear it from all white spaces
+        if(charWillBeDeleted) {
+            lastNonwhiteCharsTemp = lastNonwhiteCharsTemp.substring(0, lastNonwhiteCharsTemp.length() - 2);
+            // 2 because 1 is for counting from 0 and 2 is for removing last char
+        }
+
+        if(lastNonwhiteCharsTemp == null || lastNonwhiteCharsTemp.isEmpty()) {
+            // if no last chars found (= empty edit text box), set flag properly
+            mIsBeginningOfNewSentence = true;
+        } else {
+            // try to extract last (nonwhite) character
+            char lastNonwhiteChar = lastNonwhiteCharsTemp.charAt(lastNonwhiteCharsTemp.length() - 1);
+            if(isSentenceEnding(lastNonwhiteChar)) {
+                // sentence ending character found as last char, so we need to set flag properly
+                mIsBeginningOfNewSentence = true;
+            } else {
+                // we get here also when system delete called after second (third, ...) char on key was pressed, so we need to disable flag
+                // (dot could be just pressed on the way for further characters on similar key)
+                mIsBeginningOfNewSentence = false;
+            }
+        }
+
         //updateShiftKeyState(getCurrentInputEditorInfo());
         //inputConnection.deleteSurroundingText(1, 0); // odkomentovani zde zpusobi, ze se změna projevuje hned a ne do composing (podtrzeneho) textu
     }
@@ -764,6 +803,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 Log.i(CLASS_NAME_STRING,"onKey-DEFAULT-UNKNOWN ACTION!!!");
                 break;
         }
+        mIsBeginningOfNewSentence = true; // after done action we always expect new sentence
         playClick(Keyboard.KEYCODE_DONE);
     }
 
@@ -773,8 +813,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         getCurrentInputConnection().commitText(String.valueOf((char) KEYCODE_SPACE),1); // add also the space key
         playClick(KEYCODE_SPACE);
 
-        mSuggestionFocussed = NO_SUGGESTION_SELECTED;
-        super.setCandidatesViewShown(false);
+        hideCandidateView();
     }
 
 
@@ -797,8 +836,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         if (mMyCandidatesView != null) {
             mMyCandidatesView.clear();
         }
-        mSuggestionFocussed = NO_SUGGESTION_SELECTED;
-        super.setCandidatesViewShown(false);
+        hideCandidateView();
     }
 
 
@@ -917,6 +955,21 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     public void onLongPressGesture() {
         //mSkipKeyAfterLongpress = true;
+    }
+
+
+    private void hideCandidateView() {
+        mSuggestionFocussed = NO_SUGGESTION_SELECTED;
+        super.setCandidatesViewShown(false);
+    }
+
+
+    private boolean isSentenceEnding(char keyCode) {
+        boolean isSentenceEnding = false;
+        if(keyCode == KEYCODE_DOT || keyCode == KEYCODE_QUESTION_MARK || keyCode == KEYCODE_EXCLAMATION_MARK) {
+            isSentenceEnding = true;
+        }
+        return isSentenceEnding;
     }
 
 

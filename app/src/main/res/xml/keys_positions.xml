@@ -4,7 +4,7 @@
     android:verticalGap="0dp"
     android:keyHeight="17%p">
     <Row>
-        <Key android:codes="44,46,63,33" android:keyLabel=",.\?!" android:keyEdgeFlags="left"/>
+        <Key android:codes="46,44,63,33" android:keyLabel=".,\?!" android:keyEdgeFlags="left"/>
         <Key android:codes="97,98,99" android:keyLabel="abc"/>
         <Key android:codes="100,101,102" android:keyLabel="def" android:keyEdgeFlags="right"/>
     </Row>
