@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.example.dell.sensekeyboard.MyKeyboardViewNum
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/keyboard_num"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:keyPreviewLayout="@layout/preview"
+    android:keyTextSize="30dp"
+    android:labelTextSize="20dp"
+    android:contentDescription="\u00A0"
+/>
+    <!--android:contentDescription="@null" nezabira zde ani v kodu, cetlo desetinna carka na samsungu a tecka na lenovu, skvely workaround "\u00A0"-->

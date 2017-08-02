@@ -4,12 +4,12 @@
     android:verticalGap="0dp"
     android:keyHeight="17%p">
     <Row>
-        <Key android:codes="46,44,63,33" android:keyLabel=".,\?! 1" android:keyEdgeFlags="left" android:popupCharacters="1" android:popupKeyboard="@xml/key_popup"/>
-        <Key android:codes="97,98,99" android:keyLabel="abc 2"/>
-        <Key android:codes="100,101,102" android:keyLabel="def 3" android:keyEdgeFlags="right"/>
+        <Key android:codes="46,44,63,33" android:keyLabel="1 .,\?!" android:keyEdgeFlags="left" android:popupCharacters="1" android:popupKeyboard="@xml/key_popup"/>
+        <Key android:codes="97,98,99" android:keyLabel="2 abc"/>
+        <Key android:codes="100,101,102" android:keyLabel="3 def" android:keyEdgeFlags="right"/>
     </Row>
     <Row>
-       <Key android:codes="103,104,105" android:keyLabel="ghi 4" android:keyEdgeFlags="left"/>
+       <Key android:codes="103,104,105" android:keyLabel="4 ghi" android:keyEdgeFlags="left"/>
        <Key android:codes="106,107,108" android:keyLabel="5 jkl"/>
        <Key android:codes="109,110,111" android:keyLabel="6 mno" android:keyEdgeFlags="right"/>
    </Row>

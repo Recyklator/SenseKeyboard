@@ -22,13 +22,13 @@ class MyGestureListener implements GestureDetector.OnGestureListener, GestureDet
 
     @Override
     public boolean onDown(MotionEvent event) {
-        Log.e("SenseKeyboard", "onDown: " + event.toString());
+        Log.d("SenseKeyboard", "onDown: " + event.toString());
         return false;
     }
 
     @Override
     public void onShowPress(MotionEvent event) {
-        Log.e("SenseKeyboard", "onShowPress: " + event.toString());
+        Log.d("SenseKeyboard", "onShowPress: " + event.toString());
     }
 
     @Override
@@ -48,8 +48,8 @@ class MyGestureListener implements GestureDetector.OnGestureListener, GestureDet
 
     @Override
     public void onLongPress(MotionEvent event) {
-        Log.e("SenseKeyboard", "onLongPress: " + event.toString());
-        mMyKeyboardView.onLongPressGesture();
+        Log.d("SenseKeyboard", "onLongPress: " + event.toString());
+        //mMyKeyboardView.onLongPressGesture();
     }
 
     @Override

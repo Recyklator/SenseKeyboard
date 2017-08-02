@@ -18,6 +18,8 @@ import android.view.accessibility.AccessibilityNodeProvider;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static java.lang.Thread.sleep;
 
@@ -37,6 +39,7 @@ public class MyKeyboardView extends KeyboardView {
     private String mLastReportedCode;
     private Boolean mScrollGestureInProgress;
     private Boolean mLongPressInProgress;
+    private Timer mLongPressTimer;
 
     public MyKeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -45,6 +48,8 @@ public class MyKeyboardView extends KeyboardView {
         mLastReportedCode = "";
         mScrollGestureInProgress = false;
         mLongPressInProgress = false;
+
+        mLongPressTimer = new Timer();
 
         // Create an object of our Custom Gesture Detector Class
         MyGestureListener myGestureListener = new MyGestureListener(this);
@@ -182,12 +187,21 @@ public class MyKeyboardView extends KeyboardView {
             // Listening for the down and up touch events
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.d("SenseKeyboard", "MyKeyboardView onTouchEvent() DOWN");
+                    Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() DOWN");
+                    mLongPressTimer = new Timer();
+                    mLongPressTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            mSenseKeyboardService.setIsLongPress(true);
+                        }
+                    }, 2000); // delay of 3s
                     //handleMotionEventForAccessibility(event);
                     return true;
 
                 case MotionEvent.ACTION_UP:
                     //Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() UP");
+                    mLongPressTimer.cancel();
+                    mLongPressTimer.purge();
                     return true;
 
                 case MotionEvent.ACTION_HOVER_MOVE:
@@ -197,7 +211,20 @@ public class MyKeyboardView extends KeyboardView {
                 case MotionEvent.ACTION_MOVE:
                     //Log.d("SenseKeyboard", "MyKeyboardView onTouchEvent() MOVE");
 
-                    handleMotionEventForAccessibility(event);
+                    boolean newCharHandled = handleMotionEventForAccessibility(event);
+                    if(newCharHandled) {
+                        // even if there was long press detected on previous key, clear the flag, because we moved to another key (explore by touch)
+                        mSenseKeyboardService.setIsLongPress(false);
+                        mLongPressTimer.cancel();
+                        mLongPressTimer.purge();
+                        mLongPressTimer = new Timer();
+                        mLongPressTimer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                mSenseKeyboardService.setIsLongPress(true);
+                            }
+                        }, 2000); // delay of 3s
+                    }
                 /*Log.e("SenseKeyboard", "MyKeyboardView announceForAccessibility():"+getFocusedKeyCode());
                 super.announceForAccessibility(getFocusedKeyCode());
                 setLastReportedCode(getFocusedKeyCode());*/
@@ -326,14 +353,22 @@ public class MyKeyboardView extends KeyboardView {
     }
 
 
-    private void handleMotionEventForAccessibility(MotionEvent event) {
+    /**
+     * Function
+     * @param event
+     * @return true if new char was focused and new accessibility text was sent, false otherwise
+     */
+    private boolean handleMotionEventForAccessibility(MotionEvent event) {
+        boolean newCodeReported = false;
         String extractedKeyCharacter = extractKeyCharFromMotionEvent(event);
         setLastFocusedKeyCode(extractedKeyCharacter);
 
         if(!isFocusedCodeEqualToReported()){
             sendAccessibilityText(getLastFocusedKeyCode());
             setLastReportedCode(getLastFocusedKeyCode());
+            newCodeReported = true;
         }
+        return newCodeReported;
     }
 
 
