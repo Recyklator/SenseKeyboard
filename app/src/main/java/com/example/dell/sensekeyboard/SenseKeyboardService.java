@@ -47,7 +47,6 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     private boolean caps = false;
     private boolean mIsLongPress = false;
-    private Boolean mSkipKeyAfterLongpress = false;
     private Boolean mIsBeginningOfNewSentence = true; // on the beginning we pretend there is always new sentence
 
     // LWM feature flag, default value is false = off
@@ -57,9 +56,13 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     //private Boolean mCapitalLetterFlag;
 
     private SignificantMotionSensor mSignificantMotionSensor = null;
+    private MyKeyboardView mMyKeyboardView = null;
     private Keyboard mKeyboard = null;
     private Keyboard mNumKeyboard = null;
-    private MyKeyboardView mMyKeyboardView = null;
+    private Keyboard mCapitalKeyboard = null;
+    private List<Keyboard> mAvailableKeyboards = null;
+    private int mActiveKeyboardInt = -1;
+
 
     private AudioManager audioManager;
     private float defaultAudioVolume = (float) 0.1; // default key click audio volume
@@ -91,6 +94,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     public SenseKeyboardService() {
         mComposing = new StringBuilder();
         mSuggestions = new ArrayList<String>();
+        mAvailableKeyboards = new ArrayList<Keyboard>();
         mLongPressKeyTransition = initializeLongPressKeyTransitionMap();
         //mCapitalLetterFlag = true;
     }
@@ -155,7 +159,14 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         mSymbolsShiftedKeyboard = new  LatinKeyboard(this, R.xml.symbols_shift);*/
 
         mKeyboard = new Keyboard(this, R.xml.keys_positions);
+        mCapitalKeyboard = new Keyboard(this, R.xml.keys_positions_capital);
         mNumKeyboard = new Keyboard(this, R.xml.keys_positions_num);
+
+        mAvailableKeyboards.add(mKeyboard);
+        mAvailableKeyboards.add(mCapitalKeyboard);
+        mAvailableKeyboards.add(mNumKeyboard);
+
+        mActiveKeyboardInt = mAvailableKeyboards.size() - 1; // we go from 0 to size -1
     }
 
 
@@ -1012,8 +1023,17 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     public void swipeUp() {
         Log.e(CLASS_NAME_STRING, "swipeUp()");
 
-        mMyKeyboardView.setKeyboard(mNumKeyboard);
+        mMyKeyboardView.setKeyboard(getNextAvailableKeyboard());
     }
+
+
+    private Keyboard getNextAvailableKeyboard() {
+        if(++mActiveKeyboardInt >= mAvailableKeyboards.size()) {
+            mActiveKeyboardInt = 0;
+        }
+        return mAvailableKeyboards.get(mActiveKeyboardInt);
+    }
+
 
     private Map<Integer, Integer> initializeLongPressKeyTransitionMap() {
         Map<Integer, Integer> longPressKeyTransitionMap = new HashMap<Integer, Integer>();

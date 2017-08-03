@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
+    android:keyWidth="14%p"
+    android:horizontalGap="0px"
+    android:verticalGap="0px"
+    android:keyHeight="15%p"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true">
+    <Row>
+        <Key android:codes="46" android:keyLabel="+" android:keyEdgeFlags="left"/>
+        <Key android:codes="97" android:keyLabel="×"/>
+        <Key android:codes="100" android:keyLabel="÷"/>
+        <Key android:codes="103" android:keyLabel="="/>
+        <Key android:codes="103" android:keyLabel="%"/>
+        <Key android:codes="103" android:keyLabel="_"/>
+        <Key android:codes="106" android:keyLabel="\\" android:keyEdgeFlags="right"/>
+    </Row>
+    <Row>
+        <Key android:codes="109" android:keyLabel="\@" android:keyEdgeFlags="left"/>
+        <Key android:codes="112" android:keyLabel="#"/>
+        <Key android:codes="116" android:keyLabel="$"/>
+        <Key android:codes="119" android:keyLabel="/"/>
+        <Key android:codes="119" android:keyLabel="^"/>
+        <Key android:codes="119" android:keyLabel="&amp;"/>
+        <Key android:codes="-5" android:keyLabel="*" android:keyEdgeFlags="right"/>
+    </Row>
+    <Row>
+        <Key android:codes="32" android:keyLabel="(" android:keyEdgeFlags="left"/>
+        <Key android:codes="-4" android:keyLabel=")"/>
+        <Key android:codes="116" android:keyLabel="-"/>
+        <Key android:codes="119" android:keyLabel="'"/>
+        <Key android:codes="119" android:keyLabel="&quot;"/>
+        <Key android:codes="119" android:keyLabel=":"/>
+        <Key android:codes="-5" android:keyLabel=";" android:keyEdgeFlags="right"/>
+    </Row>
+    <Row>
+        <Key android:codes="32" android:keyLabel="[" android:keyEdgeFlags="left"/>
+        <Key android:codes="-4" android:keyLabel="]"/>
+        <Key android:codes="119" android:keyLabel="&lt;"/>
+        <Key android:codes="119" android:keyLabel="&gt;"/>
+        <Key android:codes="119" android:keyLabel="{"/>
+        <Key android:codes="-5" android:keyLabel="}"/>
+        <Key android:codes="-5" android:keyLabel="~" android:keyEdgeFlags="right"/>
+    </Row>
+</Keyboard>

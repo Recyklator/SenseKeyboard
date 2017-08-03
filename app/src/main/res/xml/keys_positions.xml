@@ -3,24 +3,24 @@
     android:horizontalGap="0dp"
     android:verticalGap="0dp"
     android:keyHeight="17%p">
-    <Row>
-        <Key android:codes="46,44,63,33" android:keyLabel=".,\?! 1" android:keyEdgeFlags="left" android:popupCharacters="1" android:popupKeyboard="@xml/key_popup"/>
-        <Key android:codes="97,98,99" android:keyLabel="abc 2"/>
-        <Key android:codes="100,101,102" android:keyLabel="def 3" android:keyEdgeFlags="right"/>
+    <Row> <!-- android:popupCharacters="1" android:popupKeyboard="@xml/key_popup" s timhle byly problémy u accessibility-->
+        <Key android:codes="46,44,63,33" android:keyLabel=".,\?!" android:keyEdgeFlags="left" android:popupKeyboard="@xml/key_specchar_popup"/>
+        <Key android:codes="97,98,99" android:keyLabel="abc"/>
+        <Key android:codes="100,101,102" android:keyLabel="def" android:keyEdgeFlags="right"/>
     </Row>
     <Row>
-       <Key android:codes="103,104,105" android:keyLabel="ghi 4" android:keyEdgeFlags="left"/>
-       <Key android:codes="106,107,108" android:keyLabel="5 jkl"/>
-       <Key android:codes="109,110,111" android:keyLabel="6 mno" android:keyEdgeFlags="right"/>
+       <Key android:codes="103,104,105" android:keyLabel="ghi" android:keyEdgeFlags="left"/>
+       <Key android:codes="106,107,108" android:keyLabel="jkl"/>
+       <Key android:codes="109,110,111" android:keyLabel="mno" android:keyEdgeFlags="right"/>
    </Row>
    <Row>
-       <Key android:codes="112,113,114,115" android:keyLabel="7 pqrs" android:keyEdgeFlags="left"/>
-       <Key android:codes="116,117,118" android:keyLabel="8 tuv"/>
-       <Key android:codes="119,120,121,122" android:keyLabel="9 wxyz" android:keyEdgeFlags="right"/>
+       <Key android:codes="112,113,114,115" android:keyLabel="pqrs" android:keyEdgeFlags="left"/>
+       <Key android:codes="116,117,118" android:keyLabel="tuv"/>
+       <Key android:codes="119,120,121,122" android:keyLabel="wxyz" android:keyEdgeFlags="right"/>
    </Row>
    <Row android:rowEdgeFlags="bottom">
        <Key android:codes="-5" android:keyLabel="DEL" android:isRepeatable="false" android:keyEdgeFlags="left"/>
-       <Key android:codes="32" android:keyLabel="0  \u2423"/>
+       <Key android:codes="32" android:keyLabel="\u2423"/>
        <Key android:codes="-4" android:keyLabel="ENTER" android:keyEdgeFlags="right"/>
    </Row>
 </Keyboard>

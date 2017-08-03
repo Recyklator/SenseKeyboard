@@ -4,23 +4,23 @@
     android:verticalGap="0dp"
     android:keyHeight="17%p">
     <Row>
-        <Key android:codes="46,44,63,33" android:keyLabel="1 .,\?!" android:keyEdgeFlags="left" android:popupCharacters="1" android:popupKeyboard="@xml/key_popup"/>
-        <Key android:codes="97,98,99" android:keyLabel="2 abc"/>
-        <Key android:codes="100,101,102" android:keyLabel="3 def" android:keyEdgeFlags="right"/>
+        <Key android:codes="49" android:keyLabel="1" android:keyEdgeFlags="left"/>
+        <Key android:codes="50" android:keyLabel="2"/>
+        <Key android:codes="51" android:keyLabel="3" android:keyEdgeFlags="right"/>
     </Row>
     <Row>
-       <Key android:codes="103,104,105" android:keyLabel="4 ghi" android:keyEdgeFlags="left"/>
-       <Key android:codes="106,107,108" android:keyLabel="5 jkl"/>
-       <Key android:codes="109,110,111" android:keyLabel="6 mno" android:keyEdgeFlags="right"/>
+       <Key android:codes="52" android:keyLabel="4" android:keyEdgeFlags="left"/>
+       <Key android:codes="53" android:keyLabel="5"/>
+       <Key android:codes="54" android:keyLabel="6" android:keyEdgeFlags="right"/>
    </Row>
    <Row>
-       <Key android:codes="112,113,114,115" android:keyLabel="7 pqrs" android:keyEdgeFlags="left"/>
-       <Key android:codes="116,117,118" android:keyLabel="8 tuv"/>
-       <Key android:codes="119,120,121,122" android:keyLabel="9 wxyz" android:keyEdgeFlags="right"/>
+       <Key android:codes="55" android:keyLabel="7" android:keyEdgeFlags="left"/>
+       <Key android:codes="56" android:keyLabel="8"/>
+       <Key android:codes="57" android:keyLabel="9" android:keyEdgeFlags="right"/>
    </Row>
    <Row android:rowEdgeFlags="bottom">
        <Key android:codes="-5" android:keyLabel="DEL" android:isRepeatable="false" android:keyEdgeFlags="left"/>
-       <Key android:codes="32" android:keyLabel="0  \u2423"/>
+       <Key android:codes="48" android:keyLabel="0 *+#" android:popupCharacters="*+#" android:popupKeyboard="@xml/key_num_specchar_popup"/>
        <Key android:codes="-4" android:keyLabel="ENTER" android:keyEdgeFlags="right"/>
    </Row>
 </Keyboard>
