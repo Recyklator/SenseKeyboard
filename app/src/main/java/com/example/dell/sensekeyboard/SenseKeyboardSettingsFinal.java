@@ -46,9 +46,6 @@ public class SenseKeyboardSettingsFinal extends AppCompatActivity {
             });
         }
 
-
-        //new MzdyServiceTask().execute(vstup);
-
         Button backButton = (Button)findViewById(R.id.final_settings_back_button);
         if (backButton != null) {
 
@@ -56,6 +53,16 @@ public class SenseKeyboardSettingsFinal extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     onBackPressed();
+                }
+            });
+        }
+
+        Button exitButton = (Button)findViewById(R.id.final_settings_exit_button);
+        if (exitButton != null) {
+            exitButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finish();
                 }
             });
         }

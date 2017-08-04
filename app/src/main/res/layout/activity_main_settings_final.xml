@@ -59,6 +59,13 @@
                 android:text="Zpět"
                 android:id="@+id/final_settings_back_button" />
 
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Ukončit nastavení"
+                android:id="@+id/final_settings_exit_button"
+                android:focusable="true" />
+
         </LinearLayout>
     </RelativeLayout>
 

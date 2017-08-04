@@ -65,7 +65,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
 
     private AudioManager audioManager;
-    private float defaultAudioVolume = (float) 0.1; // default key click audio volume
+    private float defaultAudioVolume = (float) 0.5; // default key click audio volume
 
     private static final String CLASS_NAME = SenseKeyboardService.class.getSimpleName();
 
@@ -816,7 +816,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 mMyCandidatesView.clear();
             }*/
             //updateShiftKeyState(getCurrentInputEditorInfo());
-        } else if (mComposing.length() > 0) {
+        } else if (mComposing.length() > 0 && getSuggestions().size() > index) {
             Log.e(CLASS_NAME_STRING, "pickSuggestionManually ELSE SECTION");
             if (mDisplayComposingText && getSuggestions() != null && index >= 0) {
                 mComposing.replace(0, mComposing.length(), getSuggestions().get(index));
@@ -955,33 +955,40 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
 
     private Boolean checkBeginningOfNewSentence(Boolean charWillBeDeleted) {
-        CharSequence lastCharsBeforeCursor = getCurrentInputConnection().getTextBeforeCursor(3, 0); // take 3 characters before cursor, 0 is flag - "without test style"
-        String lastNonwhiteCharsTemp = lastCharsBeforeCursor.toString().trim(); // convert char sequence to string and clear it from all white spaces
-        if(charWillBeDeleted) {
-           if(lastNonwhiteCharsTemp != null && lastNonwhiteCharsTemp.length() > 1) {
-               // there are two or more chars and we should remove last one
-               lastNonwhiteCharsTemp = lastNonwhiteCharsTemp.substring(0, lastNonwhiteCharsTemp.length() - 2);
-               // 2 because 1 is for counting from 0 and 2 is for removing last char
-           } else {
-               // there is only one char left (or none) and it should be removed, so clear nonwhite string variable
-               lastNonwhiteCharsTemp = "";
-           }
-        }
 
-        if(lastNonwhiteCharsTemp == null || lastNonwhiteCharsTemp.isEmpty()) {
-            // if no last chars found (= empty edit text box), set flag properly
-            mIsBeginningOfNewSentence = true;
-        } else {
-            // try to extract last (nonwhite) character
-            char lastNonwhiteChar = lastNonwhiteCharsTemp.charAt(lastNonwhiteCharsTemp.length() - 1);
-            if(isSentenceEnding(lastNonwhiteChar)) {
-                // sentence ending character found as last char, so we need to set flag properly
+        CharSequence lastCharsBeforeCursor = getCurrentInputConnection().getTextBeforeCursor(3, 0); // take 3 characters before cursor, 0 is flag - "without test style"
+
+        if(lastCharsBeforeCursor != null) {
+            String lastNonwhiteCharsTemp = lastCharsBeforeCursor.toString().trim(); // convert char sequence to string and clear it from all white spaces
+            if (charWillBeDeleted) {
+                if (lastNonwhiteCharsTemp != null && lastNonwhiteCharsTemp.length() > 1) {
+                    // there are two or more chars and we should remove last one
+                    lastNonwhiteCharsTemp = lastNonwhiteCharsTemp.substring(0, lastNonwhiteCharsTemp.length() - 2);
+                    // 2 because 1 is for counting from 0 and 2 is for removing last char
+                } else {
+                    // there is only one char left (or none) and it should be removed, so clear nonwhite string variable
+                    lastNonwhiteCharsTemp = "";
+                }
+            }
+
+            if (lastNonwhiteCharsTemp == null || lastNonwhiteCharsTemp.isEmpty()) {
+                // if no last chars found (= empty edit text box), set flag properly
                 mIsBeginningOfNewSentence = true;
             } else {
-                // we get here also when system delete called after second (third, ...) char on key was pressed, so we need to disable flag
-                // (dot could be just pressed on the way for further characters on similar key)
-                mIsBeginningOfNewSentence = false;
+                // try to extract last (nonwhite) character
+                char lastNonwhiteChar = lastNonwhiteCharsTemp.charAt(lastNonwhiteCharsTemp.length() - 1);
+                if (isSentenceEnding(lastNonwhiteChar)) {
+                    // sentence ending character found as last char, so we need to set flag properly
+                    mIsBeginningOfNewSentence = true;
+                } else {
+                    // we get here also when system delete called after second (third, ...) char on key was pressed, so we need to disable flag
+                    // (dot could be just pressed on the way for further characters on similar key)
+                    mIsBeginningOfNewSentence = false;
+                }
             }
+        } else {
+            // no char before curson, we are definitely at the beginning
+            mIsBeginningOfNewSentence = true;
         }
         return mIsBeginningOfNewSentence;
     }

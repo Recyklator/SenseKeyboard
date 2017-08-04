@@ -6,19 +6,19 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class SenseKeyboardSettings1 extends AppCompatActivity {
+public class SenseKeyboardSettingsInit extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_settings1);
+        setContentView(R.layout.activity_main_settings_init);
 
         Button nextButton = (Button)findViewById(R.id.main_settings_next_button);
         if (nextButton != null) {
             nextButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(SenseKeyboardSettings1.this, SenseKeyboardSettingsLwm.class);
+                    Intent intent = new Intent(SenseKeyboardSettingsInit.this, SenseKeyboardSettingsLwm.class);
                     intent.setFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
                     //intent.putExtra("data", mzdaVystup);
                     startActivity(intent);

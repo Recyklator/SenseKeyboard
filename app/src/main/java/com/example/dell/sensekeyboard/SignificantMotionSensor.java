@@ -23,7 +23,7 @@ public class SignificantMotionSensor implements SensorEventListener {
     SenseKeyboardService mSenseKeyboardService; // TODO: find better way to actualize flag in main service task rather than taking whole class and call setter.
 
     private static final Integer SENSOR_DELAY = Integer.MAX_VALUE; // delays between events from sensor informing us about changes
-    private static final Integer MOVEMENT_TURNOFF_TIMER = 30000; // 30s - timer between last movement detection and deviceInMove flag change to false
+    private static final Integer MOVEMENT_TURNOFF_TIMER = 120000; // 120s - timer between last movement detection and deviceInMove flag change to false
     private static final Integer MOVEMENT_CALCULATION_THRESHOLD = 4; // how intensive movement is classified as silence break
     private static final Integer SILENCE_BREAKS_THRESHOLD = 4; // how many silence breaks in short time needed to classify device as 'in move'
     private static final long MIN_PERIOD_BETWEEN_SILENCE_BREAKS = 2000; // 2s - all silence breaks in less than THIS millis from last one will be ignored

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/settingsName">
+
+    <CheckBoxPreference
+        android:key="@string/LWMFeature"
+        android:title="LWM Feature (Louder While Moving)"
+        android:summary="Automatické zvýšení hlasitosti při detekci zvýšeného pohybu zařízení"
+        android:defaultValue="false" />
+
+</PreferenceScreen>

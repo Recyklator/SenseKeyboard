@@ -1,14 +1,16 @@
 <resources>
-    <string name="app_name">SenseKeyboard</string>
-    <string name="sense_keyboard">Sense Keyboard</string>
-    <string name="keyboard_layout">Čeština</string>
+    <string name="appName">Sense Keyboard</string>
     <string name="LWMFeature">lwm_feature</string>
-    <string name="SettingsBaseFinal">Klávesnice byla úspěšně nakonfigurována. Aby bylo možné ji používat, je třeba ji v systému Android nastavit jako hlavní klávesnici. S tím Vám pomůže tlačítko Aktivovat pod tímto textem.</string>
+    <string name="SettingsBaseFinal">Klávesnice byla úspěšně nakonfigurována. Aby bylo možné ji používat, je třeba ji v systému Android nastavit jako hlavní klávesnici. S tím Vám pomůže tlačítko "Aktivovat klávesnici" pod tímto textem. Poté budete moci vybrat tuto klávesnici jako hlavní. Pro usnadnění můžete využít tlačítko "Zvolit klávesnici", které se rovněž nachází na této stránce.</string>
     <string name="SettingsTitleFinal">Aktivovat systémovou klávesnici</string>
     <string name="SettingsTitleLwm">Funkce Louder While Moving</string>
     <string name="SettingsBaseLwm">Zde můžete zapnout funkci Louder while moving. Pokud bude detekován rychlý pohyb zařízení typický pro jízdu autem nebo vozem MHD, aplikace automaticky zvýší hlasitost zvukové odezvy klávesnice.</string>
     <string name="SettingsTitleFirst">Sense Keyboard - Nastavení</string>
     <string name="SettingsBaseFirst">Dobrý den, děkuji Vám za důvěru, kterou jste projevili instalací intuitivní klávesnice nazvané Sense Keyboard. Dříve, než společně Vaši novou systémovou klávesnici aktivujeme, projdeme několik volitelných nastavení. Je to z toho důvodu, aby se klávesnice chovala přesně tak, jak Vám bude nejvíce vyhovovat. Máme tu připravena dvě tlačítka. První nám umožní klávesnici nastavit, tím druhým lze aplikaci ukončit.</string>
     <string name="KeyboardOn">Klávesnice je zobrazena</string>
-    <string name="KeyABC">áčko</string>
+
+    <string name="settingsName">Nastavení Sense Keyboard</string>
+    <string name="languageSelectionTitle">Volba jazyka</string>
+    <string name="selectLanguage">Zvolte jazyk zadávání</string>
+    <string name="KeyboardLayout">Čeština</string>
 </resources>

@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    coreApp="true"
     package="com.example.dell.sensekeyboard">
 
-    <uses-permission android:name="android.permission.BIND_TEXT_SERVICE" />
+    <!--<uses-permission android:name="android.permission.BIND_TEXT_SERVICE" />-->
 
-    <application
+    <!--<application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".SenseKeyboardSettings1">
+        android:theme="@style/AppTheme"
+        android:killAfterRestore="false" >-->
+
+    <application
+        android:label="@string/appName"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:killAfterRestore="false">
+
+        <activity android:name=".SenseKeyboardSettingsInit">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -32,17 +43,25 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".SenseKeyboardService"
-            android:label="@string/sense_keyboard"
+        <!-- system settings -->
+        <activity android:name=".ImeSystemPreferencesActivity" android:label="@string/settingsName">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
+
+        <service android:name="SenseKeyboardService"
+            android:label="@string/appName"
             android:permission="android.permission.BIND_INPUT_METHOD">
-            <meta-data android:name="android.view.im" android:resource="@xml/properties"/>
+            <!--<meta-data android:name="android.view.im" android:resource="@xml/properties"/>-->
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
             </intent-filter>
+            <meta-data android:name="android.view.im" android:resource="@xml/method" />
         </service>
 
-        <service android:name=".SignificantMotionSensor"
-            android:label="@string/sense_keyboard">
+        <service android:name="SignificantMotionSensor"
+            android:label="@string/appName">
 
             <meta-data android:name="android.view.im" android:resource="@xml/properties"/>
         </service>

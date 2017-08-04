@@ -25,13 +25,13 @@ public class SenseKeyboardSettingsLwm extends AppCompatActivity {
             lwmFeatureSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    //SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-                    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                    SharedPreferences.Editor editor = sharedPref.edit();
+                //SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor editor = sharedPref.edit();
 
-                    Log.e("SenseKeyboard", "Settings - LWM:"+String.valueOf(isChecked));
-                    editor.putBoolean(getString(R.string.LWMFeature), isChecked);
-                    editor.commit();
+                Log.e("SenseKeyboard", "Settings - LWM:"+String.valueOf(isChecked));
+                editor.putBoolean(getString(R.string.LWMFeature), isChecked);
+                editor.commit();
                 }
             });
 
@@ -48,10 +48,10 @@ public class SenseKeyboardSettingsLwm extends AppCompatActivity {
             nextButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(SenseKeyboardSettingsLwm.this, SenseKeyboardSettingsFinal.class);
-                    //intent.setFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    //intent.putExtra("data", mzdaVystup);
-                    startActivity(intent);
+                Intent intent = new Intent(SenseKeyboardSettingsLwm.this, SenseKeyboardSettingsFinal.class);
+                //intent.setFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+                //intent.putExtra("data", mzdaVystup);
+                startActivity(intent);
                 }
             });
         }
