@@ -28,7 +28,7 @@ public class SignificantMotionSensor implements SensorEventListener {
     private static final Integer SILENCE_BREAKS_THRESHOLD = 4; // how many silence breaks in short time needed to classify device as 'in move'
     private static final long MIN_PERIOD_BETWEEN_SILENCE_BREAKS = 2000; // 2s - all silence breaks in less than THIS millis from last one will be ignored
     private static final long MAX_PERIOD_BETWEEN_SILENCE_BREAKS = 15000; // 15s - if no silence break in THIS millis, silenceBreaksInRowCounter will be cleared
-    private final SensorManager mSensorManager;
+    private SensorManager mSensorManager = null;
     private Integer silenceBreaksInRowCounter = 0;
     private Sensor mSensor = null;
     private Timer timer; //
@@ -38,6 +38,8 @@ public class SignificantMotionSensor implements SensorEventListener {
     private float mAccel = 0.00f;
     private float mAccelCurrent = SensorManager.GRAVITY_EARTH;
 
+    public SignificantMotionSensor() {
+    }
 
     public SignificantMotionSensor(Context context, SenseKeyboardService senseKeyboardService) {
         Log.e("SenseKeyboard-SMSensor", "Significant Motion CONSTRUCTOR");

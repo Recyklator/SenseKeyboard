@@ -11,7 +11,8 @@
         android:icon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:killAfterRestore="false">
+        android:killAfterRestore="false"
+        android:extractNativeLibs="true">
 
         <activity android:name=".SenseKeyboardSettingsInit">
             <intent-filter>
