@@ -8,7 +8,6 @@ import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.media.AudioManager;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
@@ -53,7 +52,6 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     private Boolean mLwmFeatureActive = false;
     private Boolean mDeviceInMoveFlag = false; // copy of SignificantMotionSensor member, indicating if device is in move
     private Boolean mDisplayComposingText;
-    //private Boolean mCapitalLetterFlag;
 
     private SignificantMotionSensor mSignificantMotionSensor = null;
     private MyKeyboardView mMyKeyboardView = null;
@@ -63,7 +61,6 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     private List<Keyboard> mAvailableKeyboards = null;
     private List<String> mKeyboardAccessibilityDescription = null;
     private int mActiveKeyboardInt = -1;
-
 
     private AudioManager audioManager;
     private float defaultAudioVolume = (float) 0.5; // default key click audio volume
@@ -76,13 +73,12 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     private static final int NO_SUGGESTION_SELECTED = -1;
     private static final int FIRST_SUGGESTION_SELECTED = 0;
 
-
     private Typeface mTypeface;
-    private String mTypefaceName = "fonts/ubuntu/Ubuntu-R.ttf";//Jomolhari-alpha3c-0605331.ttf";//"DDC_Uchen.ttf"
+    private String mTypefaceName = "fonts/ubuntu/Ubuntu-R.ttf";
 
     private MyCandidatesView mMyCandidatesView;
-    private CompletionInfo[] mCompletions; // vybírá se z něj v pickSuggestionsManually
-    private StringBuilder mComposing; // podtrzeny text v radku kam pisu, kdyz vyberu text z nabidky (mCompletions?), zameni se za podtrzeny text
+    private CompletionInfo[] mCompletions; // select from it in pickSuggestionManually
+    private StringBuilder mComposing; // add new char to it before whole word is commit
     private List<String> mSuggestions;
     private SpellCheckerSession mSpellCheckerSession;
     private Integer mSuggestionFocussed;
@@ -101,24 +97,8 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         //mCapitalLetterFlag = true;
     }
 
-    // http://android.okhelp.cz/java_android_code.php?o=%5Candroid-15%5CSoftKeyboard%5Csrc%5Ccom%5Cexample%5Candroid%5Csoftkeyboard%5CSoftKeyboard.java
-    // http://www.blackcj.com/blog/2016/03/30/building-a-custom-android-keyboard/
-    // https://blog.autsoft.hu/discovering-the-android-api-part-1/ - API differences
-    // https://code.tutsplus.com/tutorials/an-introduction-to-androids-spelling-checker-framework--cms-23754
-    // https://developer.android.com/training/keyboard-input/style.html
-    // https://nlp.stanford.edu/IR-book/html/htmledition/edit-distance-1.html
-    // https://developer.android.com/guide/topics/text/creating-input-method.html
-    // https://developer.android.com/guide/topics/ui/accessibility/apps.html
-    // https://developer.android.com/guide/topics/ui/accessibility/index.html
-    // https://developer.android.com/topic/libraries/support-library/features.html
-    // https://developer.android.com/reference/android/view/accessibility/package-summary.html
-    // https://developer.android.com/reference/android/graphics/Canvas.html
-    // https://developer.android.com/training/gestures/detector.html
-    // https://support.google.com/accessibility/android/answer/6151827?hl=en
-
-
     @Override
-    public void onCreate() { // causes application fail (even empty method), don't know why...
+    public void onCreate() {
         super.onCreate();
 
         Log.i(CLASS_NAME_STRING,"onCreate");
@@ -127,9 +107,6 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         mSignificantMotionSensor = new SignificantMotionSensor(getApplicationContext(), this);
         mTypeface = Typeface.createFromAsset(getAssets(), mTypefaceName);
         keyDeleteTimer = new Timer();
-
-        //mInputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-        //mWordSeparators = getResources().getString(R.string.word_separators);
 
         Locale locale = Locale.getDefault();
         Log.i(CLASS_NAME_STRING,"onCreate Locale="+locale.toString());
@@ -148,18 +125,6 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
      */
     @Override
     public  void  onInitializeInterface() {
-        /*if  (mQwertyKeyboard != null) {
-            // Configuration changes can happen after the keyboard gets recreated,
-            // so we need to be able to re-build the keyboards if the available
-            // space has changed.
-            int  displayWidth = getMaxWidth();
-            if  (displayWidth == mLastDisplayWidth) return;
-            mLastDisplayWidth = displayWidth;
-        }
-        mQwertyKeyboard = new  LatinKeyboard(this, R.xml.qwerty);
-        mSymbolsKeyboard = new  LatinKeyboard(this, R.xml.symbols);
-        mSymbolsShiftedKeyboard = new  LatinKeyboard(this, R.xml.symbols_shift);*/
-
         mKeyboard = new Keyboard(this, R.xml.keys_positions);
         mCapitalKeyboard = new Keyboard(this, R.xml.keys_positions_capital);
         mNumKeyboard = new Keyboard(this, R.xml.keys_positions_num);
@@ -187,34 +152,9 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         mMyKeyboardView = (MyKeyboardView)getLayoutInflater().inflate(R.layout.keyboard, null);
         mMyKeyboardView.setKeyboardService(this); // not nice solution - must be set before first use of keyboard service
         mMyKeyboardView.getAccessibilityNodeProvider();
-        mMyKeyboardView.setPreviewEnabled(false); // tímhle zakážu preview popup nad klávesami
+        mMyKeyboardView.setPreviewEnabled(false); // this will disable preview popup over keys when pressed
         mMyKeyboardView.setKeyboard(mKeyboard);
         mMyKeyboardView.setOnKeyboardActionListener(this); // this class will be action listener since we handle onKey() events
-        /*myKeyboardView.setOnHoverListener(new View.OnHoverListener() {
-            @Override
-            public boolean onHover(View v, MotionEvent event) {
-
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_HOVER_ENTER:
-                        Log.i(CLASS_NAME_STRING,"ACTION_HOVER_ENTER");
-                        break;
-                    case MotionEvent.ACTION_HOVER_MOVE:
-                        Log.i(CLASS_NAME_STRING,"ACTION_HOVER_MOVE");
-                        v.announceForAccessibility("Experiment");
-                        break;
-                    case MotionEvent.ACTION_HOVER_EXIT:
-                        Log.i(CLASS_NAME_STRING,"ACTION_HOVER_EXIT");
-                        break;
-                }
-                return false;
-            }
-        });*/
-        //keyboardView.setupKeys(mTypeface);
-        //keyboardView.addChildrenForAccessibility();
-        //keyboardView.announceForAccessibility();
-        //keyboardView.createAccessibilityNodeInfo();
-        //keyboardView.getAccessibilityTraversalBefore();
-        //keyboardView.getAccessibilityTraversalAfter();
 
         return mMyKeyboardView;
     }
@@ -224,7 +164,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     public View onCreateExtractTextView() {
         Log.i(CLASS_NAME_STRING,"onCreateExtractTextView()");
         View view = super.onCreateExtractTextView();
-        ExtractEditText textEdit = (ExtractEditText)view.findViewById(android.R.id.inputExtractEditText); // R.id.inputExtractEditText
+        ExtractEditText textEdit = (ExtractEditText)view.findViewById(android.R.id.inputExtractEditText);
         textEdit.setTypeface(mTypeface);
         textEdit.setTextSize(30);
         return view;
@@ -358,8 +298,6 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
             mSignificantMotionSensor.register();
         }
 
-        //InputConnection ic = getCurrentInputConnection();
-
         switch (attribute.imeOptions & (EditorInfo.IME_MASK_ACTION | EditorInfo.IME_FLAG_NO_ENTER_ACTION)) {
             case EditorInfo.IME_ACTION_GO:
                 mEditorInfoImeAction = EditorInfo.IME_ACTION_GO;
@@ -434,10 +372,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         //mSpellCheckerSession = mTextServicesManager.newSpellCheckerSession(null, null, this, true);
 
         if (mComposing.length() > 0) {
-            /*ArrayList<String> list = new ArrayList<String>();
-            list.add(mComposing.toString());*/
             mSpellCheckerSession.getSentenceSuggestions(new TextInfo[] {new TextInfo(mComposing.toString())}, 3);
-
             //setSuggestions(list, true, true); // set suggestions is called from callback of getSentenceSuggestions
             mSuggestionFocussed = FIRST_SUGGESTION_SELECTED;
         } else {
@@ -455,7 +390,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
      */
     @Override
     public void onDisplayCompletions(CompletionInfo[] completions) {
-        // neznamo kdy se vola, zatim videno na samsungu v aplikaci outlook
+        // seen on samsung in outlook application
         Log.d(CLASS_NAME_STRING,"onDisplayCompletions() completions=" + completions);
         //throw new RuntimeException("onDisplayCompletions()");
         mCompletions = completions;
@@ -523,14 +458,12 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Log.e(CLASS_NAME_STRING,"onKey(primaryCode="+primaryCode+", keyCodes="+keyCodes+")");
+        Log.d(CLASS_NAME_STRING,"onKey(primaryCode="+primaryCode+", keyCodes="+keyCodes+")");
 
         if(mMyKeyboardView.isScrollGestureInProgress()) {
-            Log.e(CLASS_NAME_STRING,"onKey - ScrollGestureInProgress - SKIP");
+            Log.d(CLASS_NAME_STRING,"onKey - ScrollGestureInProgress - SKIP");
             return;
         }
-
-        KeyboardView view = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard, null);
 
         // cancel timer - if new character was pressed before timer expired, no sound will be played, we want it because of behavior when second/third code of one key pressed
         keyDeleteTimer.cancel();
@@ -570,7 +503,6 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     }
 
 
-
     /**
      * Use this to monitor hard key events being delivered to the application.
      * We get first crack at them, and can either resume them or let them
@@ -578,7 +510,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.e(CLASS_NAME_STRING,"onKeyDown(keyCode="+keyCode+", event="+event+")");
+        Log.d(CLASS_NAME_STRING,"onKeyDown(keyCode="+keyCode+", event="+event+")");
         return super.onKeyDown(keyCode, event);
     }
 
@@ -590,7 +522,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
      */
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Log.e(CLASS_NAME_STRING,"onKeyUp(keyCode="+keyCode+", event="+event+")");
+        Log.d(CLASS_NAME_STRING,"onKeyUp(keyCode="+keyCode+", event="+event+")");
         return super.onKeyUp(keyCode, event);
     }
 
@@ -713,7 +645,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         }*/
         if(mDisplayComposingText) {
             mComposing.append(code);
-            getCurrentInputConnection().setComposingText(mComposing, 1); // Tohle mi vkládá podtrzeny text do radku kam pisu, kdyz vyberu text z nabidky, zameni se za podtrzeny text
+            getCurrentInputConnection().setComposingText(mComposing, 1);
             //updateShiftKeyState(getCurrentInputEditorInfo());
             updateCandidates();
         } else {
@@ -763,8 +695,6 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         }
 
         checkBeginningOfNewSentence(charWillBeDeleted);
-        //updateShiftKeyState(getCurrentInputEditorInfo());
-        //inputConnection.deleteSurroundingText(1, 0); // odkomentovani zde zpusobi, ze se změna projevuje hned a ne do composing (podtrzeneho) textu
     }
 
 
@@ -797,7 +727,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 Log.i(CLASS_NAME_STRING,"onKey-DEFAULT-UNKNOWN ACTION!!!");
                 break;
         }
-        //mIsBeginningOfNewSentence = true; // after done action we always expect new sentence - i po enteru??
+        //mIsBeginningOfNewSentence = true; // after done action we always expect new sentence - TODO: also after enter??
         playClick(Keyboard.KEYCODE_DONE);
     }
 
@@ -821,7 +751,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
             }*/
             //updateShiftKeyState(getCurrentInputEditorInfo());
         } else if (mComposing.length() > 0 && getSuggestions().size() > index) {
-            Log.e(CLASS_NAME_STRING, "pickSuggestionManually ELSE SECTION");
+            Log.d(CLASS_NAME_STRING, "pickSuggestionManually ELSE SECTION");
             if (mDisplayComposingText && getSuggestions() != null && index >= 0) {
                 mComposing.replace(0, mComposing.length(), getSuggestions().get(index));
             }
@@ -1000,39 +930,39 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     @Override
     public void onPress(int primaryCode) {
-        Log.e(CLASS_NAME_STRING, "onPress()");
-        // dala by se použít, ale při explore by touch se zavolá jen jednou na začátku, takže pro implementaci čísel na longpressu se nehodí...
-        // prusvih s gestre listenerem zase je, ze bezi v jinem threadu (nelze menit puvodni views)
+        Log.d(CLASS_NAME_STRING, "onPress()");
+        // it could be used, but during explore by touch it is called only once at the beginning, so it is not good for longpress implementation
+        // with gesture listener, there is trouble that it runs in different thread (you cant change original views)
     }
 
     @Override
     public void onRelease(int primaryCode) {
-        Log.e(CLASS_NAME_STRING, "onRelease()");
+        Log.d(CLASS_NAME_STRING, "onRelease()");
     }
 
     @Override
     public void onText(CharSequence text) {
-        Log.e(CLASS_NAME_STRING, "onText()");
+        Log.d(CLASS_NAME_STRING, "onText()");
     }
 
     @Override
     public void swipeDown() {
-        Log.e(CLASS_NAME_STRING, "swipeDown()");
+        Log.d(CLASS_NAME_STRING, "swipeDown()");
     }
 
     @Override
     public void swipeLeft() {
-        Log.e(CLASS_NAME_STRING, "swipeLeft()");
+        Log.d(CLASS_NAME_STRING, "swipeLeft()");
     }
 
     @Override
     public void swipeRight() {
-        Log.e(CLASS_NAME_STRING, "swipeRight()");
+        Log.d(CLASS_NAME_STRING, "swipeRight()");
     }
 
     @Override
     public void swipeUp() {
-        Log.e(CLASS_NAME_STRING, "swipeUp()");
+        Log.d(CLASS_NAME_STRING, "swipeUp()");
         mMyKeyboardView.setKeyboard(getNextAvailableKeyboard());
         mMyKeyboardView.sendAccessibilityText(mKeyboardAccessibilityDescription.get(mActiveKeyboardInt));
     }

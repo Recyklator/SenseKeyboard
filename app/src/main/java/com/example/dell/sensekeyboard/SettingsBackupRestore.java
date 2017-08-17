@@ -16,12 +16,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Currency;
 
-/*new MzdyServiceTask().execute(vstup);
-        }
-        });
-        }
-*/
-
+/**
+ * Class NOT used at this moment
+ */
 class SettingsBackup extends AsyncTask<String, Integer, String> {
 
     private static final String apiAddress = "https://storage.p.mashape.com/object?key=";
@@ -49,16 +46,4 @@ class SettingsBackup extends AsyncTask<String, Integer, String> {
 
         return "a";
     }
-
-
-   /* @Override
-    protected void onPostExecute(Integer serverResponse) {
-        //progress.dismiss();
-        if(serverResponse != null) {
-            Intent i = new Intent(MainActivity.this, DetailActivity.class);
-            i.putExtra("data", mzdaVystup);
-            startActivity(i);
-        }
-    }*/
-
 }

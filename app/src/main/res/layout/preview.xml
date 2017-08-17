@@ -6,6 +6,5 @@
     android:background="@android:color/white"
     android:textColor="@android:color/black"
     android:textStyle="bold"
-    android:textSize="30sp"
-    android:contentDescription="test"  android:label="test2" android:text="test3">
+    android:textSize="30sp">
 </TextView>

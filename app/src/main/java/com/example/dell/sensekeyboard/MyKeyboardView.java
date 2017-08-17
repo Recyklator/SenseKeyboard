@@ -26,7 +26,6 @@ import static java.lang.Thread.sleep;
 /**
  * Created by Dell on 7.7.2017.
  */
-
 public class MyKeyboardView extends KeyboardView {
 
     private static final int KEYCODE_DEL = -5;
@@ -35,10 +34,8 @@ public class MyKeyboardView extends KeyboardView {
 
     private AccessibilityManager mAccessibilityManager;
     private AccessibilityNodeProvider mAccessibilityNodeProvider;
-    private MyGestureListener mMyGestureListener;
     private GestureDetector mGestureDetector;
     private SenseKeyboardService mSenseKeyboardService;
-    //private Keyboard.Key key;
     private Integer mLastFocusedKeyCode;
     private Integer mLastReportedCode;
     private Boolean mScrollGestureInProgress;
@@ -63,11 +60,9 @@ public class MyKeyboardView extends KeyboardView {
         mAccessibilityManager = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
     }
 
-
     public void setKeyboardService(SenseKeyboardService senseKeyboardService) {
         //mSenseKeyboardService = senseKeyboardService;
     }
-
 
    /*
     * (API Level 4) The system calls this method when your custom view generates an accessibility event.
@@ -79,13 +74,13 @@ public class MyKeyboardView extends KeyboardView {
     */
     @Override
     public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
-        // volá se po onPopulateAccessibilityEvent(), "bazingaaa" se přidá na konec zvukového výstupu
+        // called after onPopulateAccessibilityEvent(), if I add text here, it will be attached at the end of accessibility notification
+
+        //event.getText().add("any attached string");
 
         // Call the super implementation to populate its text to the event, which
         // calls onPopulateAccessibilityEvent() on API Level 14 and up.
         boolean completed = super.dispatchPopulateAccessibilityEvent(event);
-
-        event.getText().add("bazingaaa");
 
         return completed;
     }
@@ -97,7 +92,7 @@ public class MyKeyboardView extends KeyboardView {
      */
     @Override
     public void onPopulateAccessibilityEvent(AccessibilityEvent event) {
-        // volá se když ručně vyberu z nabídky našeptávače
+        // called when I manually select item from autocomplete menu
         super.onPopulateAccessibilityEvent(event);
 
         int mActiveSelection = 5;
@@ -136,25 +131,7 @@ public class MyKeyboardView extends KeyboardView {
      */
     @Override
     public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
-        // Add a record for ourselves as well.
-        AccessibilityEvent record = AccessibilityEvent.obtain();
-
         super.onInitializeAccessibilityEvent(event);
-        //event.setPassword(true);
-        if(event.getEventType() == AccessibilityEvent.TYPE_VIEW_HOVER_ENTER && !isFocusedCodeEqualToReported()) {
-
-
-            /*event.getText().add(getFocusedKeyString());
-            event.setBeforeText(getFocusedKeyString());
-            event.setContentDescription(getFocusedKeyString());
-            //event.setAction(AccessibilityNodeInfo.ACTION_FOCUS); // no effect
-            record.setContentDescription("maslo");
-            record.getText().add("sadlo");
-            event.appendRecord(record);*/
-
-            /*super.announceForAccessibility(getLastFocusedKeyCode());
-            setLastReportedCode(getLastFocusedKeyCode());*/
-        }
     }
 
 
@@ -166,11 +143,7 @@ public class MyKeyboardView extends KeyboardView {
      */
     @Override
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-        info.setText("Gool");
-        info.setContentDescription("DvaGoly");
         super.onInitializeAccessibilityNodeInfo(info);
-        info.setText("Gool");
-        info.setContentDescription("DvaGoly");
     }
 
 
@@ -189,7 +162,7 @@ public class MyKeyboardView extends KeyboardView {
             // Listening for the down and up touch events
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() DOWN");
+                    Log.d("SenseKeyboard", "MyKeyboardView onTouchEvent() DOWN");
                     mLongPressTimer = new Timer();
                     mLongPressTimer.schedule(new TimerTask() {
                         @Override
@@ -201,13 +174,13 @@ public class MyKeyboardView extends KeyboardView {
                     return true;
 
                 case MotionEvent.ACTION_UP:
-                    //Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() UP");
+                    //Log.d("SenseKeyboard", "MyKeyboardView onTouchEvent() UP");
                     mLongPressTimer.cancel();
                     mLongPressTimer.purge();
                     return true;
 
                 case MotionEvent.ACTION_HOVER_MOVE:
-                    //Log.e("SenseKeyboard", "MyKeyboardView onTouchEvent() HOVER_MOVE");
+                    //Log.d("SenseKeyboard", "MyKeyboardView onTouchEvent() HOVER_MOVE");
                     return true;
 
                 case MotionEvent.ACTION_MOVE:
@@ -227,9 +200,6 @@ public class MyKeyboardView extends KeyboardView {
                             }
                         }, 2000); // delay of 3s
                     }
-                /*Log.e("SenseKeyboard", "MyKeyboardView announceForAccessibility():"+getFocusedKeyCode());
-                super.announceForAccessibility(getFocusedKeyCode());
-                setLastReportedCode(getFocusedKeyCode());*/
                     return true;
 
                 default:
@@ -261,14 +231,6 @@ public class MyKeyboardView extends KeyboardView {
                 public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualDescendantId) {
                     Log.d("SenseKeyboard", "MyKeyboardView createAccessibilityNodeInfo()");
                     AccessibilityNodeInfo accessibilityNodeInfo = AccessibilityNodeInfo.obtain();
-                    /*String test = null;
-                    accessibilityNodeInfo.setContentDescription(test);*/
-                    //accessibilityNodeInfo.setText(getLastFocusedKeyCode());
-                    //setLastReportedCode(getLastFocusedKeyCode());
-                    /*Bundle arguments = new Bundle();
-                    arguments.putInt(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, 1);
-                    accessibilityNodeInfo.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, arguments);*/
-
                     return accessibilityNodeInfo;
                 }
 
@@ -394,18 +356,22 @@ public class MyKeyboardView extends KeyboardView {
         return mLastFocusedKeyCode;
     }
 
+
     private void setLastFocusedKeyCode(Integer lastFocusedKeyCode) {
         //Log.d("SenseKeyboard", "MyKeyboardView setLastFocusedKeyCode(lastFocusedKeyCode = "+lastFocusedKeyCode+")");
         mLastFocusedKeyCode = lastFocusedKeyCode;
     }
 
+
     private Integer getLastReportedCode() {
         return mLastReportedCode;
     }
 
+
     private void setLastReportedCode(Integer lastReportedCode) {
         mLastReportedCode = lastReportedCode;
     }
+
 
     private Boolean isFocusedCodeEqualToReported() {
         return mLastFocusedKeyCode == mLastReportedCode;

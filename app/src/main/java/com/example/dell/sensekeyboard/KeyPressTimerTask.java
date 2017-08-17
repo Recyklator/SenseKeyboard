@@ -4,6 +4,7 @@ import java.util.TimerTask;
 
 /**
  * Created by Dell on 5.7.2017.
+ * Class NOT used at this moment !!
  */
 public class KeyPressTimerTask extends TimerTask {
 

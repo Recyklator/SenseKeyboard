@@ -141,6 +141,9 @@ public class SignificantMotionSensor implements SensorEventListener {
 }
 
 
+/**
+ * Class for change of devideInMoveFlag
+ */
 class DropDeviceInMoveFlag extends TimerTask {
 
     private SignificantMotionSensor mSignificantMotionSensor;

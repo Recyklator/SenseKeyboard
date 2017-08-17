@@ -37,7 +37,7 @@ public class ImeSystemPreferencesActivity extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // We overwrite the title of the activity, as the default one is "Voice Search".
+        // We overwrite the title of the activity
         setTitle(R.string.settingsName);
     }
 

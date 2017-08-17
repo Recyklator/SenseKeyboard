@@ -3,7 +3,7 @@
     android:horizontalGap="0dp"
     android:verticalGap="0dp"
     android:keyHeight="17%p">
-    <Row> <!-- android:popupCharacters="1" android:popupKeyboard="@xml/key_popup" s timhle byly problémy u accessibility-->
+    <Row>
         <Key android:codes="46,44,63,33" android:keyLabel=".,\?!" android:keyEdgeFlags="left" android:popupKeyboard="@xml/key_specchar_popup"/>
         <Key android:codes="97,98,99" android:keyLabel="abc"/>
         <Key android:codes="100,101,102" android:keyLabel="def" android:keyEdgeFlags="right"/>

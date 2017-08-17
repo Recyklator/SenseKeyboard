@@ -71,7 +71,6 @@ class MyGestureListener implements GestureDetector.OnGestureListener, GestureDet
         }
 
         mMyKeyboardView.setGestureInProgressFlag(false);
-
         return true;
     }
 

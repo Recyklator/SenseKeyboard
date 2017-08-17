@@ -4,6 +4,7 @@ import android.inputmethodservice.Keyboard;
 
 /**
  * Created by Dell on 9.6.2017.
+ * Class NOT used at this moment !!
  */
 
 public class KeyboardKeyStateMachine {
