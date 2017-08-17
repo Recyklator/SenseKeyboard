@@ -3,9 +3,9 @@
     android:title="@string/settingsName">
 
     <CheckBoxPreference
-        android:key="@string/LWMFeature"
-        android:title="LWM Feature (Louder While Moving)"
-        android:summary="Automatické zvýšení hlasitosti při detekci zvýšeného pohybu zařízení"
+        android:key="@string/LWMFeatureId"
+        android:title="@string/LWMFeature"
+        android:summary="@string/LWMFeatureDesc"
         android:defaultValue="false" />
 
 </PreferenceScreen>

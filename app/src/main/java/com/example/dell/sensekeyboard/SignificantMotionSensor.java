@@ -78,6 +78,7 @@ public class SignificantMotionSensor implements SensorEventListener {
             mAccelCurrent = (float) Math.sqrt(x*x + y*y + z*z);
             float delta = mAccelCurrent - mAccelLast;
             mAccel = mAccel * 0.9f + delta;
+            Log.e("SenseKeyboard", "x="+x+", y="+y+", z="+z+", mAccelCurrent="+mAccelCurrent+", delta="+delta+", mAccel="+mAccel);
             if(mAccel > MOVEMENT_CALCULATION_THRESHOLD) {
                 // first of all, check when last threshold break happened (if not at least MIN_PERIOD_..., then ignore it)
                 long currentTime = System.currentTimeMillis();

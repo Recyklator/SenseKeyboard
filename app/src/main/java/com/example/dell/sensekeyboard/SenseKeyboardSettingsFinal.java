@@ -40,7 +40,7 @@ public class SenseKeyboardSettingsFinal extends AppCompatActivity {
                         imeManager.showInputMethodPicker();
                         //finish(); // does not do a good job, cancels only this settings page
                     } else {
-                        Toast.makeText(context ,"Error", Toast.LENGTH_LONG).show();
+                        Toast.makeText(context ,"Chyba: Žádné vstupní metody", Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -52,7 +52,10 @@ public class SenseKeyboardSettingsFinal extends AppCompatActivity {
             backButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onBackPressed();
+                    Intent intent = new Intent(SenseKeyboardSettingsFinal.this, SenseKeyboardSettingsLwm.class);
+                    intent.setFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
                 }
             });
         }

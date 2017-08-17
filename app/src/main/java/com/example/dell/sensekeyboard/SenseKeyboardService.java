@@ -61,6 +61,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     private Keyboard mNumKeyboard = null;
     private Keyboard mCapitalKeyboard = null;
     private List<Keyboard> mAvailableKeyboards = null;
+    private List<String> mKeyboardAccessibilityDescription = null;
     private int mActiveKeyboardInt = -1;
 
 
@@ -95,6 +96,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         mComposing = new StringBuilder();
         mSuggestions = new ArrayList<String>();
         mAvailableKeyboards = new ArrayList<Keyboard>();
+        mKeyboardAccessibilityDescription = new ArrayList<String>();
         mLongPressKeyTransition = initializeLongPressKeyTransitionMap();
         //mCapitalLetterFlag = true;
     }
@@ -163,10 +165,12 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         mNumKeyboard = new Keyboard(this, R.xml.keys_positions_num);
 
         mAvailableKeyboards.add(mKeyboard);
+        mKeyboardAccessibilityDescription.add("Malá písmena");
         mAvailableKeyboards.add(mCapitalKeyboard);
+        mKeyboardAccessibilityDescription.add("Velká písmena");
         mAvailableKeyboards.add(mNumKeyboard);
-
-        mActiveKeyboardInt = mAvailableKeyboards.size() - 1; // we go from 0 to size -1
+        mKeyboardAccessibilityDescription.add("Čísla");
+        mActiveKeyboardInt = 0; // we go from 0 to mAvailableKeyboards.size() - 1;
     }
 
 
@@ -621,7 +625,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         // LWM feature variable is initialized to FALSE, so we can use here as default value if no entry found (second parameter)
-        mLwmFeatureActive = sharedPref.getBoolean(getString(R.string.LWMFeature), mLwmFeatureActive);
+        mLwmFeatureActive = sharedPref.getBoolean(getString(R.string.LWMFeatureId), mLwmFeatureActive);
         Log.d(CLASS_NAME_STRING, "LWM:"+String.valueOf(mLwmFeatureActive));
     }
 
@@ -793,7 +797,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
                 Log.i(CLASS_NAME_STRING,"onKey-DEFAULT-UNKNOWN ACTION!!!");
                 break;
         }
-        mIsBeginningOfNewSentence = true; // after done action we always expect new sentence
+        //mIsBeginningOfNewSentence = true; // after done action we always expect new sentence - i po enteru??
         playClick(Keyboard.KEYCODE_DONE);
     }
 
@@ -956,7 +960,7 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
 
     private Boolean checkBeginningOfNewSentence(Boolean charWillBeDeleted) {
 
-        CharSequence lastCharsBeforeCursor = getCurrentInputConnection().getTextBeforeCursor(3, 0); // take 3 characters before cursor, 0 is flag - "without test style"
+        CharSequence lastCharsBeforeCursor = getCurrentInputConnection().getTextBeforeCursor(3, 0); // take 3 characters before cursor, 0 is flag - "without text style"
 
         if(lastCharsBeforeCursor != null) {
             String lastNonwhiteCharsTemp = lastCharsBeforeCursor.toString().trim(); // convert char sequence to string and clear it from all white spaces
@@ -1029,8 +1033,8 @@ public class SenseKeyboardService extends InputMethodService implements Keyboard
     @Override
     public void swipeUp() {
         Log.e(CLASS_NAME_STRING, "swipeUp()");
-
         mMyKeyboardView.setKeyboard(getNextAvailableKeyboard());
+        mMyKeyboardView.sendAccessibilityText(mKeyboardAccessibilityDescription.get(mActiveKeyboardInt));
     }
 
 

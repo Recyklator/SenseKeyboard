@@ -25,12 +25,11 @@ public class SenseKeyboardSettingsLwm extends AppCompatActivity {
             lwmFeatureSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                //SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 SharedPreferences.Editor editor = sharedPref.edit();
 
-                Log.e("SenseKeyboard", "Settings - LWM:"+String.valueOf(isChecked));
-                editor.putBoolean(getString(R.string.LWMFeature), isChecked);
+                Log.d("SenseKeyboard", "Settings - LWM:"+String.valueOf(isChecked));
+                editor.putBoolean(getString(R.string.LWMFeatureId), isChecked);
                 editor.commit();
                 }
             });
@@ -38,7 +37,7 @@ public class SenseKeyboardSettingsLwm extends AppCompatActivity {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
             Boolean defaultLVMValue = false;
-            Boolean lwmFeatureActive = sharedPref.getBoolean(getString(R.string.LWMFeature), defaultLVMValue);
+            Boolean lwmFeatureActive = sharedPref.getBoolean(getString(R.string.LWMFeatureId), defaultLVMValue);
 
             lwmFeatureSwitch.setChecked(lwmFeatureActive);
         }
@@ -49,9 +48,9 @@ public class SenseKeyboardSettingsLwm extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                 Intent intent = new Intent(SenseKeyboardSettingsLwm.this, SenseKeyboardSettingsFinal.class);
-                //intent.setFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
-                //intent.putExtra("data", mzdaVystup);
+                intent.setFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+                finish();
                 }
             });
         }
@@ -66,10 +65,4 @@ public class SenseKeyboardSettingsLwm extends AppCompatActivity {
             });
         }
     }
-
-    /*
-    Performing stop of activity that is not resumed: {com.example.dell.sensekeyboard/com.example.dell.sensekeyboard.SenseKeyboardSettingsLwm}
-    java.lang.RuntimeException: Performing stop of activity that is not resumed: {com.example.dell.sensekeyboard/com.example.dell.sensekeyboard.SenseKeyboardSettingsLwm}
-    at android.app.ActivityThread.performStopActivityInner(ActivityThread.java:3607)
-    */
 }

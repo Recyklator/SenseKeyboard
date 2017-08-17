@@ -18,11 +18,10 @@ public class SenseKeyboardSettingsInit extends AppCompatActivity {
             nextButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(SenseKeyboardSettingsInit.this, SenseKeyboardSettingsLwm.class);
-                    intent.setFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    //intent.putExtra("data", mzdaVystup);
-                    startActivity(intent);
-                    finish();
+                Intent intent = new Intent(SenseKeyboardSettingsInit.this, SenseKeyboardSettingsLwm.class);
+                intent.setFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
                 }
             });
         }

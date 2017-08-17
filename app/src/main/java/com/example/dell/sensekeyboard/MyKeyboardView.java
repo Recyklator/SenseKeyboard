@@ -29,14 +29,18 @@ import static java.lang.Thread.sleep;
 
 public class MyKeyboardView extends KeyboardView {
 
+    private static final int KEYCODE_DEL = -5;
+    private static final int KEYCODE_SPACE = 32;
+    private static final int KEYCODE_ENTER = -4;
+
     private AccessibilityManager mAccessibilityManager;
     private AccessibilityNodeProvider mAccessibilityNodeProvider;
     private MyGestureListener mMyGestureListener;
     private GestureDetector mGestureDetector;
     private SenseKeyboardService mSenseKeyboardService;
     //private Keyboard.Key key;
-    private String mLastFocusedKeyCode;
-    private String mLastReportedCode;
+    private Integer mLastFocusedKeyCode;
+    private Integer mLastReportedCode;
     private Boolean mScrollGestureInProgress;
     private Boolean mLongPressInProgress;
     private Timer mLongPressTimer;
@@ -44,8 +48,6 @@ public class MyKeyboardView extends KeyboardView {
     public MyKeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        mLastFocusedKeyCode = "";
-        mLastReportedCode = "";
         mScrollGestureInProgress = false;
         mLongPressInProgress = false;
 
@@ -194,7 +196,7 @@ public class MyKeyboardView extends KeyboardView {
                         public void run() {
                             mSenseKeyboardService.setIsLongPress(true);
                         }
-                    }, 2000); // delay of 3s
+                    }, 2000); // delay of 2s
                     //handleMotionEventForAccessibility(event);
                     return true;
 
@@ -314,6 +316,23 @@ public class MyKeyboardView extends KeyboardView {
     }
 
 
+    public void sendAccessibilityText(Integer keyCode) {
+        String accessibilityString;
+
+        if(keyCode == KEYCODE_DEL) {
+            accessibilityString = "smazat";
+        } else if(keyCode == KEYCODE_ENTER) {
+            accessibilityString = "entr";
+        } else if(keyCode == KEYCODE_SPACE) {
+            accessibilityString = "mezerník";
+        } else {
+            // cast keyCode Integer to int, then to char and then make String from it
+            accessibilityString = String.valueOf((char)(int) keyCode);
+        }
+        sendAccessibilityText(accessibilityString);
+    }
+
+
     public void sendAccessibilityText(String accessibilityText) {
 
         if (mAccessibilityManager.isEnabled() && accessibilityText != null && !accessibilityText.isEmpty()) {
@@ -332,9 +351,9 @@ public class MyKeyboardView extends KeyboardView {
     }
 
 
-    private String extractKeyCharFromMotionEvent(MotionEvent event) {
+    private Integer extractKeyCodeFromMotionEvent(MotionEvent event) {
 
-        String pressedKeyChar = "";
+        Integer code = mLastFocusedKeyCode; // we will return last focused key in case that we were unable to detect recently focused key
         float fx = event.getX();
         float fy = event.getY();
         int x = Math.round(fx);
@@ -344,12 +363,11 @@ public class MyKeyboardView extends KeyboardView {
         List<Keyboard.Key> keysList = keyboard.getKeys();
         for(Keyboard.Key key : keysList) {
             if(key.isInside(x, y)) {
-                char code = (char)key.codes[0];
-                pressedKeyChar = String.valueOf(code);
+                code = key.codes[0];
                 break;
             }
         }
-        return pressedKeyChar;
+        return code;
     }
 
 
@@ -360,8 +378,8 @@ public class MyKeyboardView extends KeyboardView {
      */
     private boolean handleMotionEventForAccessibility(MotionEvent event) {
         boolean newCodeReported = false;
-        String extractedKeyCharacter = extractKeyCharFromMotionEvent(event);
-        setLastFocusedKeyCode(extractedKeyCharacter);
+        Integer extractedKeyCode = extractKeyCodeFromMotionEvent(event);
+        setLastFocusedKeyCode(extractedKeyCode);
 
         if(!isFocusedCodeEqualToReported()){
             sendAccessibilityText(getLastFocusedKeyCode());
@@ -372,25 +390,25 @@ public class MyKeyboardView extends KeyboardView {
     }
 
 
-    private String getLastFocusedKeyCode() {
+    private Integer getLastFocusedKeyCode() {
         return mLastFocusedKeyCode;
     }
 
-    private void setLastFocusedKeyCode(String lastFocusedKeyCode) {
+    private void setLastFocusedKeyCode(Integer lastFocusedKeyCode) {
         //Log.d("SenseKeyboard", "MyKeyboardView setLastFocusedKeyCode(lastFocusedKeyCode = "+lastFocusedKeyCode+")");
         mLastFocusedKeyCode = lastFocusedKeyCode;
     }
 
-    private String getLastReportedCode() {
+    private Integer getLastReportedCode() {
         return mLastReportedCode;
     }
 
-    private void setLastReportedCode(String lastReportedCode) {
+    private void setLastReportedCode(Integer lastReportedCode) {
         mLastReportedCode = lastReportedCode;
     }
 
     private Boolean isFocusedCodeEqualToReported() {
-        return mLastFocusedKeyCode.equals(mLastReportedCode);
+        return mLastFocusedKeyCode == mLastReportedCode;
     }
 
 }
